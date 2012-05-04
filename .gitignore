@@ -1,2 +1,3 @@
 *.pyc
-.xdtrace_rc
+*.rc
+*.sqlite3
