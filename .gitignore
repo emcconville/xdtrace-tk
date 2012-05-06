@@ -1,3 +1,5 @@
 *.pyc
 *.rc
+*.xt
+*_rc
 *.sqlite3
