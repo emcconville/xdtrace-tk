@@ -24,9 +24,9 @@ class Application(Frame) :
 		mx = float(sum(pie_data.values()))
 		switch = 360-int(360 * (pie_data['system']/mx))
 		pos = 45,40,width-40,height-45
-		self.CANVAS.create_arc(pos,start=0,extent=switch,fill=self.rc.get('c_selected'),outline=self.rc.get('c_selected'),tag="actor")
+		self.CANVAS.create_arc(pos,start=0,extent=switch,fill=self.rc.get('primary_color'),outline=self.rc.get('primary_color'),tag="actor")
 		pos = 40,45,width-45,height-40
-		self.CANVAS.create_arc(pos,start=switch,extent=360-switch,fill=self.rc.get('c_other'),outline=self.rc.get('c_other'),tag="actor")
+		self.CANVAS.create_arc(pos,start=switch,extent=360-switch,fill=self.rc.get('secondary_color'),outline=self.rc.get('secondary_color'),tag="actor")
 	
 	def loadFile(self,event=None):
 		foptions = {
@@ -95,15 +95,34 @@ class Application(Frame) :
 		self.CANVAS.coords(self._border,20,20,self.width-20,self.height-20)
 		self.CANVAS.update_idletasks()
 
+# Graph prototype
 
+class Stage:
+	def __init__(self,canvas,config):
+		self.canvas = canvas
+		self.config = config
+		
+	def build(self):
+		pass
+		
+	def destroy(self):
+		'''Remove all bandings, and destroy all actor objects form canvas'''
+		self.canvas.unbind_class('actor')
+		self.canvas.delete('actor')
+	
+	def resize(self,width,height):
+		pass
 
 # Preferences
 
 class Preferences:
 	attr = {
-		'c_selected' : '#FCAF3E',
-		'c_line' : '#2E3436',
-		'c_other': '#8AE234', 
+		'background_color' : '#FFFFFF',
+		'base_color'       : '#2E3436',
+		'neutral_color'    : '#666666',
+		'primary_color'    : '#FCAF3E',
+		'secondary_color'  : '#8AE234', 
+		'tertiary_color'   : '#0645AD',
 		'recent' : [],
 	}
 	def __init__(self):
@@ -129,18 +148,18 @@ class Preferences_Dialog(tkSimpleDialog.Dialog):
 		Label(master,text="Graph line color").grid(row=0)
 		Label(master,text="Graph selected color").grid(row=1)
 		Label(master,text="Graph function color").grid(row=2)
-		self.c_line = Entry(master)
-		self.c_selected = Entry(master)
-		self.c_other = Entry(master)
-		self.c_line.grid(row=0,column=1)
-		self.c_selected.grid(row=1,column=1)
-		self.c_other.grid(row=2,column=1)
-		self.c_line.insert(0,self.parent.rc.get('c_line'))
-		self.c_selected.insert(0,self.parent.rc.get('c_selected'))
-		self.c_other.insert(0,self.parent.rc.get('c_other'))
+		self.base_color = Entry(master)
+		self.primary_color = Entry(master)
+		self.secondary_color = Entry(master)
+		self.base_color.grid(row=0,column=1)
+		self.primary_color.grid(row=1,column=1)
+		self.secondary_color.grid(row=2,column=1)
+		self.base_color.insert(0,self.parent.rc.get('base_color'))
+		self.primary_color.insert(0,self.parent.rc.get('primary_color'))
+		self.secondary_color.insert(0,self.parent.rc.get('secondary_color'))
 	def apply(self):
 		changes = {}
-		for a in['c_line','c_selected','c_other']:
+		for a in ['base_color','primary_color','secondary_color']:
 			e = getattr(self,a)
 			v = e.get()
 			if v != self.parent.rc.get(a):
@@ -160,8 +179,8 @@ class Import:
 		self._top   = int(self._canvas.winfo_height() / 2)
 		self.database = None
 		self._text = self._canvas.create_text(self._width,self._top-16,text="",tag="actor",justify="left",width=self._width,anchor="nw",fill="#CCCCCC",font="Helvetica 12")
-		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill="white",outline=rc.get('c_selected'),tag="actor")
-		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('c_selected'),outline=rc.get('c_selected'),tag="actor")
+		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill="white",outline=rc.get('primary_color'),tag="actor")
+		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('primary_color'),outline=rc.get('primary_color'),tag="actor")
 		self._total = 0.0
 
 	def process(self,filename):
