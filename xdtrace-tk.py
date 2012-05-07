@@ -44,11 +44,15 @@ class Application(Frame) :
 			self.clearCanvas()
 			self.showPieChart()
 	
-	def loadCanvas(self,event):
-		print event
+	def loadCanvas(self,index):
+		self.stage = self.graphes[index]['stage']()
+		self.stage.build(self.CANVAS,self.db_path,self.rc)
 		
 	def clearCanvas(self,event=None):
 		try:
+			if self.stage is not None:
+				self.stage.destroy()
+				self.stage
 			self.CANVAS.delete('actor')
 		except Exception:
 			pass
@@ -66,7 +70,7 @@ class Application(Frame) :
 					graph = module.__dict__[_name]
 					item = {
 						'menu_title' : graph.MENU_TITLE,
-						'stage' : graph.Stage()
+						'stage' : graph.Stage
 					}
 					self.graphes.append(item)
 		
@@ -81,8 +85,10 @@ class Application(Frame) :
 		self.F_MENU.add_command(label='Exit',accelerator=	"Cmd+Q",command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
 		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
+		i = 0
 		for graph in self.graphes:
-			self.V_MENU.add_command(label=graph['menu_title'],command=graph['stage'].build)
+			self.V_MENU.add_command(label=graph['menu_title'],command=lambda i=i: self.loadCanvas(i))
+			i+=1
 		self.MENU_BAR.add_cascade(label="Views",menu=self.V_MENU)
 		self.master.config(menu=self.MENU_BAR)
 		
