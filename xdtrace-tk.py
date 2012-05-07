@@ -75,7 +75,7 @@ class Application(Frame) :
 		
 	def close(self,event=None):
 		self.rc.save()
-		if os.path.exists(self.db_path):
+		if self.db_path is not None and os.path.exists(self.db_path):
 			os.remove(self.db_path)
 		self.master.quit()
 	
