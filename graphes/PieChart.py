@@ -1,10 +1,8 @@
-import abc
-from Stage import Stage
-
-class PieChart(Stage):
-		
-	def build(self,canvas,db_path,config):
+MENU_TITLE = 'Pie Chart'
+class Stage():
+	def build(self):
 		'''Render graph from database'''
+		print 'Clicked'
 		return
 		
 	def destroy(self):
@@ -16,9 +14,3 @@ class PieChart(Stage):
 	def resize(self,width,height):
 		'''Rebuild graph on canvas w/h change'''
 		return
-
-Stage.register(PieChart)
-
-if __name__ == '__main__':
-	print 'Subclass:', issubclass(PieChart, Stage)
-	print 'Instance:', isinstance(PieChart(), Stage)

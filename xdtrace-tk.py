@@ -6,6 +6,8 @@ import re, os, cPickle, hashlib, sqlite3
 
 class Application(Frame) :
 	
+	graphes = []
+	
 	def showPieChart(self):
 		width = self.CANVAS.winfo_width()
 		height = self.CANVAS.winfo_height()
@@ -42,6 +44,9 @@ class Application(Frame) :
 			self.clearCanvas()
 			self.showPieChart()
 	
+	def loadCanvas(self,event):
+		print event
+		
 	def clearCanvas(self,event=None):
 		try:
 			self.CANVAS.delete('actor')
@@ -50,6 +55,20 @@ class Application(Frame) :
 	
 	def pref_dialog(self):
 		d = Preferences_Dialog(self)
+		
+	def loadGraphes(self):
+		for root, dirs, files in os.walk(os.path.join('.','graphes')):
+			for fname in files:
+				_name = re.match(r"^([A-Z](.*?))\.py$",fname)
+				if _name is not None:
+					_name = _name.group(1)
+					module = __import__("graphes.%s" % _name)
+					graph = module.__dict__[_name]
+					item = {
+						'menu_title' : graph.MENU_TITLE,
+						'stage' : graph.Stage()
+					}
+					self.graphes.append(item)
 		
 	def initMenu(self):
 		self.MENU_BAR = Menu(self.master)
@@ -61,9 +80,14 @@ class Application(Frame) :
 		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.clearCanvas)
 		self.F_MENU.add_command(label='Exit',accelerator=	"Cmd+Q",command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
+		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
+		for graph in self.graphes:
+			self.V_MENU.add_command(label=graph['menu_title'],command=graph['stage'].build)
+		self.MENU_BAR.add_cascade(label="Views",menu=self.V_MENU)
 		self.master.config(menu=self.MENU_BAR)
 		
 	def initWidgets(self):
+		self.loadGraphes()
 		self.initMenu()
 		self.CANVAS = Canvas(self,width=self['width'],height=self['height'])
 		self.CANVAS.pack(fill='both', expand=1)
