@@ -126,6 +126,10 @@ class Stage:
 # Preferences
 
 class Preferences:
+	'''
+		Simple get/set class for managing meta-data.
+		Uses cPickle to load & write preferences to disk.
+	'''
 	attr = {
 		'background_color' : '#FFFFFF',
 		'base_color'       : '#2E3436',
@@ -136,6 +140,7 @@ class Preferences:
 		'recent' : [],
 	}
 	def __init__(self):
+		'''Generate rc filename, and load existing rc if found.'''
 		self.rc = os.path.join(os.path.dirname(os.path.abspath(__file__)),__file__+'.rc')
 		if os.path.exists(self.rc):
 			fh = open(self.rc,'rb')
@@ -143,18 +148,27 @@ class Preferences:
 			self.attr = dict(self.attr.items() + attr.items())
 			fh.close()
 	def save(self):
+		'''Write meta-data to disk.'''
 		fh = open(self.rc,'wb')
 		cPickle.dump(self.attr,fh)
 		fh.close()
 		
 	def get(self,k):
+		'''Retrive attribute'''
 		return self.attr[k]
 	
 	def set(self,k,v):
+		'''Define attribute'''
 		self.attr[k] = v
 
 class Preferences_Dialog(tkSimpleDialog.Dialog):
+	'''
+		GUI wrapper for Preferences (rc).
+		Extends tkSimpleDialog, and should be refactored;
+		such that, meta-data attributes can be generated dynamically.
+	'''
 	def body(self,master):
+		'''See tkSimpleDialog.Dialog.body'''
 		Label(master,text="Graph line color").grid(row=0)
 		Label(master,text="Graph selected color").grid(row=1)
 		Label(master,text="Graph function color").grid(row=2)
@@ -168,6 +182,7 @@ class Preferences_Dialog(tkSimpleDialog.Dialog):
 		self.primary_color.insert(0,self.parent.rc.get('primary_color'))
 		self.secondary_color.insert(0,self.parent.rc.get('secondary_color'))
 	def apply(self):
+		'''See tkSimpleDialog.Dialog.apply'''
 		changes = {}
 		for a in ['base_color','primary_color','secondary_color']:
 			e = getattr(self,a)
