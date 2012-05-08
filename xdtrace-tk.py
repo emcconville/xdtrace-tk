@@ -8,28 +8,6 @@ class Application(Frame) :
 	
 	graphes = []
 	
-	def showPieChart(self):
-		width = self.CANVAS.winfo_width()
-		height = self.CANVAS.winfo_height()
-		center_x = width / 2
-		center_y = height / 2
-		dh = sqlite3.connect(self.db_path)
-		cursor = dh.cursor()
-		sql = 'SELECT COUNT(user_defined), user_defined FROM trace WHERE entry = 0 GROUP BY user_defined'
-		pie_data = {'system': 0, 'user': 0}
-		for row in cursor.execute(sql):
-			if int(row[1]) == 0:
-				pie_data['system'] += row[0]
-			else:
-				pie_data['user'] += row[0]
-		cursor.close()
-		mx = float(sum(pie_data.values()))
-		switch = 360-int(360 * (pie_data['system']/mx))
-		pos = 45,40,width-40,height-45
-		self.CANVAS.create_arc(pos,start=0,extent=switch,fill=self.rc.get('primary_color'),outline=self.rc.get('primary_color'),tag="actor")
-		pos = 40,45,width-45,height-40
-		self.CANVAS.create_arc(pos,start=switch,extent=360-switch,fill=self.rc.get('secondary_color'),outline=self.rc.get('secondary_color'),tag="actor")
-	
 	def loadFile(self,event=None):
 		foptions = {
 			'title':'Please select a xDebug-Trace (.xt) File',
@@ -42,7 +20,7 @@ class Application(Frame) :
 			c = Import(self.CANVAS,self.rc)
 			self.db_path = c.process(filename)
 			self.clearCanvas()
-			self.showPieChart()
+			self.loadCanvas(0)
 	
 	def loadCanvas(self,index):
 		self.stage = self.graphes[index]['stage']()
@@ -52,10 +30,10 @@ class Application(Frame) :
 		try:
 			if self.stage is not None:
 				self.stage.destroy()
-				self.stage
-			self.CANVAS.delete('actor')
 		except Exception:
 			pass
+		self.CANVAS.delete('actor')
+		self.CANVAS.update_idletasks()
 	
 	def pref_dialog(self):
 		d = Preferences_Dialog(self)
@@ -82,7 +60,7 @@ class Application(Frame) :
 		self.F_MENU.add_command(label='Preferences',command=self.pref_dialog)
 		self.F_MENU.add_separator()
 		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.clearCanvas)
-		self.F_MENU.add_command(label='Exit',accelerator=	"Cmd+Q",command=self.close)
+		self.F_MENU.add_command(label='Quit', accelerator="Cmd+Q",command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
 		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
 		i = 0
@@ -123,6 +101,11 @@ class Application(Frame) :
 		self.width = self.winfo_width()
 		self.height = self.winfo_height()
 		self.CANVAS.coords(self._border,20,20,self.width-20,self.height-20)
+		try:
+			if self.stage is not None:
+				self.stage.resize(self.width,self.height)
+		except Exception:
+				pass
 		self.CANVAS.update_idletasks()
 
 # Graph prototype
@@ -208,9 +191,9 @@ class Import:
 		self._width = int(self._canvas.winfo_width() / 3.333)
 		self._top   = int(self._canvas.winfo_height() / 2)
 		self.database = None
-		self._text = self._canvas.create_text(self._width,self._top-16,text="",tag="actor",justify="left",width=self._width,anchor="nw",fill="#CCCCCC",font="Helvetica 12")
-		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill="white",outline=rc.get('primary_color'),tag="actor")
-		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('primary_color'),outline=rc.get('primary_color'),tag="actor")
+		self._text = self._canvas.create_text(self._width,self._top-16,text="",tags="actor",justify="left",width=self._width,anchor="nw",fill="#CCCCCC",font="Helvetica 12")
+		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill="white",outline=rc.get('primary_color'),tags="actor")
+		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('primary_color'),outline=rc.get('primary_color'),tags="actor")
 		self._total = 0.0
 
 	def process(self,filename):
