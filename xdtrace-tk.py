@@ -19,20 +19,30 @@ class Application(Frame) :
 		if len(filename) > 0 :
 			c = Import(self.CANVAS,self.rc)
 			self.db_path = c.process(filename)
-			self.clearCanvas()
-			self.loadCanvas(0)
+			self.resetCanvas()
+			self.buildCanvas(0)
 	
-	def loadCanvas(self,index):
-		self.clearCanvas()
+	def buildCanvas(self,index):
+		try:
+			if self.CANVAS is None:
+				raise Exception('Canvas')
+			if self.db_path is None:
+				raise Exception('Database path')
+			if self.rc is None:
+				raise Exception('Run-Configuration')
+		except Exception as e:
+			print "[%s] is undefined" % e
+			return
+		self.resetCanvas()
 		self.stage = self.graphes[index]()
 		self.stage.build(self.CANVAS,self.db_path,self.rc)
 		
-	def clearCanvas(self,event=None):
+	def resetCanvas(self,event=None):
 		try:
 			if self.stage is not None:
 				self.stage.destroy()
-		except Exception:
-			pass
+		except Exception as e:
+			print 'Unable to destroy [%s]' % e
 		self.CANVAS.delete('actor')
 		self.CANVAS.update_idletasks()
 	
@@ -56,13 +66,13 @@ class Application(Frame) :
 		self.F_MENU.add_separator()
 		self.F_MENU.add_command(label='Preferences',command=self.pref_dialog)
 		self.F_MENU.add_separator()
-		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.clearCanvas)
+		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.resetCanvas)
 		self.F_MENU.add_command(label='Quit', accelerator="Cmd+Q",command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
 		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
 		i = 0
 		for graph in self.graphes:
-			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.loadCanvas(i))
+			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.buildCanvas(i))
 			i+=1
 		self.MENU_BAR.add_cascade(label="Views",menu=self.V_MENU)
 		self.master.config(menu=self.MENU_BAR)
@@ -75,7 +85,7 @@ class Application(Frame) :
 		self._border = self.CANVAS.create_rectangle(20,20,self.width-20,self.height-20,fill='white',width=1,outline='#cccccc')
 		self.bind('<Configure>',self._update_canvas)
 		self.bind_all('<Command-o>',self.loadFile)
-		self.bind_all('<Command-w>',self.clearCanvas)
+		self.bind_all('<Command-w>',self.resetCanvas)
 		self.bind_all('<Command-q>',self.close)
 		
 	def close(self,event=None):
@@ -107,21 +117,21 @@ class Application(Frame) :
 
 # Graph prototype
 
-class Stage:
-	def __init__(self,canvas,config):
-		self.canvas = canvas
-		self.config = config
-		
-	def build(self):
-		pass
-		
-	def destroy(self):
-		'''Remove all bandings, and destroy all actor objects form canvas'''
-		self.canvas.unbind_class('actor')
-		self.canvas.delete('actor')
-	
-	def resize(self,width,height):
-		pass
+#class Stage:
+#	def __init__(self,canvas,config):
+#		self.canvas = canvas
+#		self.config = config
+#		
+#	def build(self):
+#		pass
+#		
+#	def destroy(self):
+#		'''Remove all bandings, and destroy all actor objects form canvas'''
+#		self.canvas.unbind_class('actor')
+#		self.canvas.delete('actor')
+#	
+#	def resize(self,width,height):
+#		pass
 
 # Preferences
 
