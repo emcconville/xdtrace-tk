@@ -1,7 +1,6 @@
 import sqlite3
-
-MENU_TITLE = 'Pie Chart'
 class Stage():
+	MENU_TITLE = 'Pie Chart'
 	def build(self,canvas,db_path,config):
 		'''Render graph from database'''
 		self.canvas = canvas
@@ -37,6 +36,7 @@ class Stage():
 		
 	def resize(self,width,height):
 		'''Rebuild graph on canvas w/h change'''
+		#print "Resizing %dx%d" % (width,height)
 		self.canvas.coords(self._system,45,40,width-40,height-45)
 		self.canvas.coords(self._user,40,45,width-45,height-40)
 		return

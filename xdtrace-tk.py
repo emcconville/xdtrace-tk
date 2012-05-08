@@ -23,7 +23,8 @@ class Application(Frame) :
 			self.loadCanvas(0)
 	
 	def loadCanvas(self,index):
-		self.stage = self.graphes[index]['stage']()
+		self.clearCanvas()
+		self.stage = self.graphes[index]()
 		self.stage.build(self.CANVAS,self.db_path,self.rc)
 		
 	def clearCanvas(self,event=None):
@@ -46,11 +47,7 @@ class Application(Frame) :
 					_name = _name.group(1)
 					module = __import__("graphes.%s" % _name)
 					graph = module.__dict__[_name]
-					item = {
-						'menu_title' : graph.MENU_TITLE,
-						'stage' : graph.Stage
-					}
-					self.graphes.append(item)
+					self.graphes.append(graph.Stage)
 		
 	def initMenu(self):
 		self.MENU_BAR = Menu(self.master)
@@ -65,7 +62,7 @@ class Application(Frame) :
 		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
 		i = 0
 		for graph in self.graphes:
-			self.V_MENU.add_command(label=graph['menu_title'],command=lambda i=i: self.loadCanvas(i))
+			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.loadCanvas(i))
 			i+=1
 		self.MENU_BAR.add_cascade(label="Views",menu=self.V_MENU)
 		self.master.config(menu=self.MENU_BAR)
@@ -217,7 +214,7 @@ class Import:
 			x = float(fh.tell()) / self._total
 			x -= x % 0.01
 			x = int(self._width * x)
-			if x <> self._x:
+			if x is not self._x:
 				self._canvas.coords(self._prog,self._width,self._top,self._width + x,self._top+10)
 				self._canvas.update_idletasks()
 				self._x = x
@@ -261,7 +258,7 @@ class Import:
 			x = float(fh.tell()) / self._total
 			x -= x % 0.01
 			x = int(self._width * x)
-			if x <> self._x:
+			if x is not self._x:
 				self._canvas.coords(self._prog,self._width,self._top,self._width+x,self._top+10)
 				self._canvas.update_idletasks()
 				self._x = x
