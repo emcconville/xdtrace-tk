@@ -6,27 +6,7 @@ import re, os, cPickle, hashlib, sqlite3
 
 class Application(Frame) :
 	
-	def showPieChart(self):
-		width = self.CANVAS.winfo_width()
-		height = self.CANVAS.winfo_height()
-		center_x = width / 2
-		center_y = height / 2
-		dh = sqlite3.connect(self.db_path)
-		cursor = dh.cursor()
-		sql = 'SELECT COUNT(user_defined), user_defined FROM trace WHERE entry = 0 GROUP BY user_defined'
-		pie_data = {'system': 0, 'user': 0}
-		for row in cursor.execute(sql):
-			if int(row[1]) == 0:
-				pie_data['system'] += row[0]
-			else:
-				pie_data['user'] += row[0]
-		cursor.close()
-		mx = float(sum(pie_data.values()))
-		switch = 360-int(360 * (pie_data['system']/mx))
-		pos = 45,40,width-40,height-45
-		self.CANVAS.create_arc(pos,start=0,extent=switch,fill=self.rc.get('primary_color'),outline=self.rc.get('primary_color'),tag="actor")
-		pos = 40,45,width-45,height-40
-		self.CANVAS.create_arc(pos,start=switch,extent=360-switch,fill=self.rc.get('secondary_color'),outline=self.rc.get('secondary_color'),tag="actor")
+	graphes = []
 	
 	def loadFile(self,event=None):
 		foptions = {
@@ -39,17 +19,45 @@ class Application(Frame) :
 		if len(filename) > 0 :
 			c = Import(self.CANVAS,self.rc)
 			self.db_path = c.process(filename)
-			self.clearCanvas()
-			self.showPieChart()
+			self.resetCanvas()
+			self.buildCanvas(0)
 	
-	def clearCanvas(self,event=None):
+	def buildCanvas(self,index):
 		try:
-			self.CANVAS.delete('actor')
-		except Exception:
-			pass
+			if self.CANVAS is None:
+				raise Exception('Canvas')
+			if self.db_path is None:
+				raise Exception('Database path')
+			if self.rc is None:
+				raise Exception('Run-Configuration')
+		except Exception as e:
+			print "[%s] is undefined" % e
+			return
+		self.resetCanvas()
+		self.stage = self.graphes[index]()
+		self.stage.build(self.CANVAS,self.db_path,self.rc)
+		
+	def resetCanvas(self,event=None):
+		try:
+			if self.stage is not None:
+				self.stage.destroy()
+		except Exception as e:
+			print 'Unable to destroy [%s]' % e
+		self.CANVAS.delete('actor')
+		self.CANVAS.update_idletasks()
 	
 	def pref_dialog(self):
 		d = Preferences_Dialog(self)
+		
+	def loadGraphes(self):
+		for root, dirs, files in os.walk(os.path.join('.','graphes')):
+			for fname in files:
+				_name = re.match(r"^([A-Z](.*?))\.py$",fname)
+				if _name is not None:
+					_name = _name.group(1)
+					module = __import__("graphes.%s" % _name)
+					graph = module.__dict__[_name]
+					self.graphes.append(graph.Stage)
 		
 	def initMenu(self):
 		self.MENU_BAR = Menu(self.master)
@@ -58,19 +66,26 @@ class Application(Frame) :
 		self.F_MENU.add_separator()
 		self.F_MENU.add_command(label='Preferences',command=self.pref_dialog)
 		self.F_MENU.add_separator()
-		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.clearCanvas)
-		self.F_MENU.add_command(label='Exit',accelerator=	"Cmd+Q",command=self.close)
+		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.resetCanvas)
+		self.F_MENU.add_command(label='Quit', accelerator="Cmd+Q",command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
+		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
+		i = 0
+		for graph in self.graphes:
+			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.buildCanvas(i))
+			i+=1
+		self.MENU_BAR.add_cascade(label="Views",menu=self.V_MENU)
 		self.master.config(menu=self.MENU_BAR)
 		
 	def initWidgets(self):
+		self.loadGraphes()
 		self.initMenu()
 		self.CANVAS = Canvas(self,width=self['width'],height=self['height'])
 		self.CANVAS.pack(fill='both', expand=1)
 		self._border = self.CANVAS.create_rectangle(20,20,self.width-20,self.height-20,fill='white',width=1,outline='#cccccc')
 		self.bind('<Configure>',self._update_canvas)
 		self.bind_all('<Command-o>',self.loadFile)
-		self.bind_all('<Command-w>',self.clearCanvas)
+		self.bind_all('<Command-w>',self.resetCanvas)
 		self.bind_all('<Command-q>',self.close)
 		
 	def close(self,event=None):
@@ -93,25 +108,30 @@ class Application(Frame) :
 		self.width = self.winfo_width()
 		self.height = self.winfo_height()
 		self.CANVAS.coords(self._border,20,20,self.width-20,self.height-20)
+		try:
+			if self.stage is not None:
+				self.stage.resize(self.width,self.height)
+		except Exception:
+				pass
 		self.CANVAS.update_idletasks()
 
 # Graph prototype
 
-class Stage:
-	def __init__(self,canvas,config):
-		self.canvas = canvas
-		self.config = config
-		
-	def build(self):
-		pass
-		
-	def destroy(self):
-		'''Remove all bandings, and destroy all actor objects form canvas'''
-		self.canvas.unbind_class('actor')
-		self.canvas.delete('actor')
-	
-	def resize(self,width,height):
-		pass
+#class Stage:
+#	def __init__(self,canvas,config):
+#		self.canvas = canvas
+#		self.config = config
+#		
+#	def build(self):
+#		pass
+#		
+#	def destroy(self):
+#		'''Remove all bandings, and destroy all actor objects form canvas'''
+#		self.canvas.unbind_class('actor')
+#		self.canvas.delete('actor')
+#	
+#	def resize(self,width,height):
+#		pass
 
 # Preferences
 
@@ -193,9 +213,9 @@ class Import:
 		self._width = int(self._canvas.winfo_width() / 3.333)
 		self._top   = int(self._canvas.winfo_height() / 2)
 		self.database = None
-		self._text = self._canvas.create_text(self._width,self._top-16,text="",tag="actor",justify="left",width=self._width,anchor="nw",fill="#CCCCCC",font="Helvetica 12")
-		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill="white",outline=rc.get('primary_color'),tag="actor")
-		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('primary_color'),outline=rc.get('primary_color'),tag="actor")
+		self._text = self._canvas.create_text(self._width,self._top-16,text="",tags="actor",justify="left",width=self._width,anchor="nw",fill="#CCCCCC",font="Helvetica 12")
+		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill="white",outline=rc.get('primary_color'),tags="actor")
+		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('primary_color'),outline=rc.get('primary_color'),tags="actor")
 		self._total = 0.0
 
 	def process(self,filename):
@@ -219,7 +239,7 @@ class Import:
 			x = float(fh.tell()) / self._total
 			x -= x % 0.01
 			x = int(self._width * x)
-			if x <> self._x:
+			if x is not self._x:
 				self._canvas.coords(self._prog,self._width,self._top,self._width + x,self._top+10)
 				self._canvas.update_idletasks()
 				self._x = x
@@ -263,7 +283,7 @@ class Import:
 			x = float(fh.tell()) / self._total
 			x -= x % 0.01
 			x = int(self._width * x)
-			if x <> self._x:
+			if x is not self._x:
 				self._canvas.coords(self._prog,self._width,self._top,self._width+x,self._top+10)
 				self._canvas.update_idletasks()
 				self._x = x
