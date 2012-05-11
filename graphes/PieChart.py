@@ -22,9 +22,9 @@ class Stage():
 		cursor.close()
 		mx = float(sum(pie_data.values()))
 		switch = 360-int(360 * (pie_data['system']/mx))
-		pos = 45,40,width-40,height-45
+		pos = 40,40,width-40,height-40
 		self._system = self.canvas.create_arc(pos,start=0,extent=switch,fill=self.config.get('primary_color'),outline=self.config.get('primary_color'),tags="actor")
-		pos = 40,45,width-45,height-40
+		pos = 40,40,width-40,height-40
 		self._user = self.canvas.create_arc(pos,start=switch,extent=360-switch,fill=self.config.get('secondary_color'),outline=self.config.get('secondary_color'),tags="actor")
 		return
 		
@@ -37,8 +37,8 @@ class Stage():
 	def resize(self,width,height):
 		'''Rebuild graph on canvas w/h change'''
 		#print "Resizing %dx%d" % (width,height)
-		self.canvas.coords(self._system,45,40,width-40,height-45)
-		self.canvas.coords(self._user,40,45,width-45,height-40)
+		self.canvas.coords(self._system,40,40,width-40,height-40)
+		self.canvas.coords(self._user,40,40,width-40,height-40)
 		return
 
 		
