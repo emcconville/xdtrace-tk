@@ -5,10 +5,12 @@ import tkFileDialog, tkSimpleDialog
 import re, os, cPickle, hashlib, sqlite3
 
 from xdbtrc.xt import Import
+from xdbtrc.rc import Preferences, Preferences_Dialog
 
 class Application(Frame) :
-	
+	stage = db_path = None
 	graphes = []
+	width, height = 760, 360
 	
 	def loadFile(self,event=None):
 		foptions = {
@@ -19,8 +21,7 @@ class Application(Frame) :
 		}
 		filename = tkFileDialog.askopenfilename(**foptions)
 		if len(filename) > 0 :
-			c = Import(self.CANVAS,self.rc)
-			self.db_path = c.process(filename)
+			self.db_path = Import(self.CANVAS,self.rc).process(filename)
 			self.resetCanvas()
 			self.buildCanvas(0)
 	
@@ -56,9 +57,8 @@ class Application(Frame) :
 			for fname in files:
 				_name = re.match(r"^([A-Z](.*?))\.py$",fname)
 				if _name is not None:
-					_name = _name.group(1)
-					module = __import__("graphes.%s" % _name)
-					graph = module.__dict__[_name]
+					module = __import__("graphes.%s" % _name.group(1))
+					graph = module.__dict__[_name.group(1)]
 					self.graphes.append(graph.Stage)
 		
 	def initMenu(self):
@@ -98,9 +98,6 @@ class Application(Frame) :
 	
 	def __init__(self,master=None):
 		self.rc = Preferences()
-		self.db_path = None
-		self.width = 760
-		self.height = 290
 		Frame.__init__(self,master,width=self.width,height=self.height)
 		self.master.title('xdbug-trace-tk')
 		self.pack(fill='both', expand=1)
@@ -117,84 +114,14 @@ class Application(Frame) :
 				pass
 		self.CANVAS.update_idletasks()
 
-# Preferences
 
-class Preferences:
-	'''
-		Simple get/set class for managing meta-data.
-		Uses cPickle to load & write preferences to disk.
-	'''
-	attr = {
-		'background_color' : '#FFFFFF',
-		'base_color'       : '#2E3436',
-		'neutral_color'    : '#666666',
-		'primary_color'    : '#FCAF3E',
-		'secondary_color'  : '#8AE234', 
-		'tertiary_color'   : '#0645AD',
-		'recent' : [],
-	}
-	def __init__(self):
-		'''Generate rc filename, and load existing rc if found.'''
-		self.rc = os.path.join(os.path.dirname(os.path.abspath(__file__)),__file__+'.rc')
-		if os.path.exists(self.rc):
-			fh = open(self.rc,'rb')
-			attr = cPickle.load(fh)
-			self.attr = dict(self.attr.items() + attr.items())
-			fh.close()
-	def save(self):
-		'''Write meta-data to disk.'''
-		fh = open(self.rc,'wb')
-		cPickle.dump(self.attr,fh)
-		fh.close()
-		
-	def get(self,k):
-		'''Retrive attribute'''
-		return self.attr[k]
-	
-	def set(self,k,v):
-		'''Define attribute'''
-		self.attr[k] = v
 
-class Preferences_Dialog(tkSimpleDialog.Dialog):
-	'''
-		GUI wrapper for Preferences (rc).
-		Extends tkSimpleDialog, and should be refactored;
-		such that, meta-data attributes can be generated dynamically.
-	'''
-	def body(self,master):
-		'''See tkSimpleDialog.Dialog.body'''
-		Label(master,text="Graph line color").grid(row=0)
-		Label(master,text="Graph selected color").grid(row=1)
-		Label(master,text="Graph function color").grid(row=2)
-		self.base_color = Entry(master)
-		self.primary_color = Entry(master)
-		self.secondary_color = Entry(master)
-		self.base_color.grid(row=0,column=1)
-		self.primary_color.grid(row=1,column=1)
-		self.secondary_color.grid(row=2,column=1)
-		self.base_color.insert(0,self.parent.rc.get('base_color'))
-		self.primary_color.insert(0,self.parent.rc.get('primary_color'))
-		self.secondary_color.insert(0,self.parent.rc.get('secondary_color'))
-	def apply(self):
-		'''See tkSimpleDialog.Dialog.apply'''
-		changes = {}
-		for a in ['base_color','primary_color','secondary_color']:
-			e = getattr(self,a)
-			v = e.get()
-			if v != self.parent.rc.get(a):
-				self.parent.rc.set(a,v)
-				changes[a] = v
-		self.result = changes.values()
 
-def build():
+if __name__ == '__main__':
 	root = Tk()
-	app = Application(root)
-	app.mainloop()
+	Application(root).mainloop()
 	try:
 	  root.destroy()
 	except TclError :
 		print "Nothing to destroy"
-
 	exit(0)
-if __name__ == '__main__':
-	build()
