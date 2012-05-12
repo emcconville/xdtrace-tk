@@ -23,7 +23,22 @@ class Stage():
 			pos = left,top,width,height
 			color = self.config.get('primary_color' if user_defined == 1 else 'secondary_color')
 			level_tag = 'level%s' % str(level)
-			self.canvas.create_arc(pos,start=start,extent=end,fill=color,tags=('actor','radiant',level_tag))
+			options = {
+				'start'         : start,
+				'extent'        : end,
+				'activeoutline' : self.config.get('tertiary_color'),
+				'outline'       : self.config.get('neutral_color'),
+				'fill'          : color,
+				'tags'          : ('actor','radiant',level_tag)
+			}
+			self.canvas.create_arc(pos,**options)
+		cursor.close()
+		for _x in range(self.total_levels,0):
+			self.canvas.tag_raise('level%s' % _x)
+		self.canvas.tag_bind('radiant',"<Enter>",self.onMouseEnter)
+		self.canvas.tag_bind('radiant',"<Leave>",self.onMouseLeave)
+		self.canvas.tag_bind('radiant',"<Motion>",self.onMouseMove)
+		self.canvas.tag_bind('radiant',"<Button-1>",self.onMouseClick)
 		
 	def destroy(self):
 		pass
@@ -32,14 +47,17 @@ class Stage():
 		pass
 	
 	def onMouseClick(self,event):
-		pass
+		print event.widget
 
 	def onMouseEnter(self,event):
-		pass
+		print event.type
 
 	def onMouseLeave(self,event):
-		pass
+		print event.type
 
+	def onMouseMove(self,event):
+		print event.x,event.y
+	
 	def radiant(self,start,end):
 		start = math.floor(((start - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
 		end   = math.floor(((end   - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
