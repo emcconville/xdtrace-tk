@@ -47,24 +47,29 @@ class Preferences_Dialog(tkSimpleDialog.Dialog):
 		Extends tkSimpleDialog, and should be refactored;
 		such that, meta-data attributes can be generated dynamically.
 	'''
+	attr_message = {
+		'background_color' : 'Background Color',
+		'base_color'       : 'Base Color',
+		'neutral_color'    : 'Neutral Color',
+		'primary_color'    : 'Primary Color',
+		'secondary_color'  : 'Secondary Color', 
+		'tertiary_color'   : 'Tertiary Color',
+	}
 	def body(self,master):
 		'''See tkSimpleDialog.Dialog.body'''
-		Label(master,text="Graph line color").grid(row=0)
-		Label(master,text="Graph selected color").grid(row=1)
-		Label(master,text="Graph function color").grid(row=2)
-		self.base_color = Entry(master)
-		self.primary_color = Entry(master)
-		self.secondary_color = Entry(master)
-		self.base_color.grid(row=0,column=1)
-		self.primary_color.grid(row=1,column=1)
-		self.secondary_color.grid(row=2,column=1)
-		self.base_color.insert(0,self.parent.rc.get('base_color'))
-		self.primary_color.insert(0,self.parent.rc.get('primary_color'))
-		self.secondary_color.insert(0,self.parent.rc.get('secondary_color'))
+		ri = -1
+		for key, message in self.attr_message.items():
+			ri += 1
+			Label(master,text=message).grid(row=ri)
+			_t = Entry(master)
+			_t.grid(row=ri,column=1)
+			_t.insert(0,self.parent.rc.get(key))
+			setattr(self,key,_t)
+			
 	def apply(self):
 		'''See tkSimpleDialog.Dialog.apply'''
 		changes = {}
-		for a in ['base_color','primary_color','secondary_color']:
+		for a in self.attr_message:
 			e = getattr(self,a)
 			v = e.get()
 			if v != self.parent.rc.get(a):
