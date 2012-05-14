@@ -25,12 +25,13 @@ class Preferences:
 	}
 	def __init__(self):
 		'''Generate rc filename, and load existing rc if found.'''
-		self.rc = os.path.join(os.path.dirname(os.path.abspath(__file__)),__file__+'.rc')
+		self.rc = os.path.join(os.path.dirname(os.path.abspath(__file__)),'xdbtrc.rc')
 		if os.path.exists(self.rc):
 			fh = open(self.rc,'rb')
 			attr = cPickle.load(fh)
 			self.attr = dict(self.attr.items() + attr.items())
 			fh.close()
+	
 	def save(self):
 		'''Write meta-data to disk.'''
 		fh = open(self.rc,'wb')
@@ -44,6 +45,14 @@ class Preferences:
 	def set(self,k,v):
 		'''Define attribute'''
 		self.attr[k] = v
+	
+	def get_geometry(self):
+		return '%dx%d+%d+%d' % (self.attr['width'],self.attr['height'],self.attr['root_x'],self.attr['root_y'])
+	
+	def set_geometry(self,geo):
+		cords = geo.split('+')
+		self.attr['width'], self.attr['height'] = map(int,cords[0].split('x'))
+		self.attr['root_x'], self.attr['root_y'] = map(int,cords[1:])
 
 class Preferences_Dialog(tkSimpleDialog.Dialog):
 	'''
