@@ -84,7 +84,6 @@ class Application(Frame) :
 		self.initMenu()
 		self.CANVAS = Canvas(self,width=self['width'],height=self['height'])
 		self.CANVAS.pack(fill='both', expand=1)
-		self._border = self.CANVAS.create_rectangle(20,20,self.width-20,self.height-20,fill='white',width=1,outline='#cccccc')
 		self.bind('<Configure>',self._update_canvas)
 		self.bind_all('<Command-o>',self.loadFile)
 		self.bind_all('<Command-w>',self.resetCanvas)
@@ -98,18 +97,28 @@ class Application(Frame) :
 	
 	def __init__(self,master=None):
 		self.rc = Preferences()
-		Frame.__init__(self,master,width=self.width,height=self.height)
+		dims = (
+			self.rc.get('width'),
+			self.rc.get('height'),
+			self.rc.get('root_x'),
+			self.rc.get('root_y')
+		)
+		Frame.__init__(self,master,width=dims[0],height=dims[1])
 		self.master.title('xdbug-trace-tk')
 		self.pack(fill='both', expand=1)
 		self.initWidgets()
+		self.master.geometry('%dx%d+%d+%d' % dims)
 	
 	def _update_canvas(self,event):
-		self.width = self.winfo_width()
-		self.height = self.winfo_height()
-		self.CANVAS.coords(self._border,20,20,self.width-20,self.height-20)
+		width = self.winfo_width()
+		height = self.winfo_height()
+		self.rc.set('width',width)
+		self.rc.set('height',height)
+		self.rc.set('root_x',self.winfo_rootx())
+		self.rc.set('root_y',self.winfo_rooty())
 		try:
 			if self.stage is not None:
-				self.stage.resize(self.width,self.height)
+				self.stage.resize(width,height)
 		except Exception:
 				pass
 		self.CANVAS.update_idletasks()

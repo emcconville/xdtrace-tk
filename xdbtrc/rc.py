@@ -18,6 +18,10 @@ class Preferences:
 		'secondary_color'  : '#8AE234', 
 		'tertiary_color'   : '#0645AD',
 		'recent' : [],
+		'root_x' : 0,
+		'root_y' : 0,
+		'height' : 360,
+		'width'  : 760,
 	}
 	def __init__(self):
 		'''Generate rc filename, and load existing rc if found.'''
