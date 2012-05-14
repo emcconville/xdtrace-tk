@@ -1,5 +1,5 @@
 import sqlite3, math
-class Stage():
+class Stage(object):
 	MENU_TITLE = 'Radiant Dial'
 	
 	def build(self,canvas,db_path,config):
@@ -14,24 +14,32 @@ class Stage():
 		sql  = 'SELECT a.function_name, a.memory_usage AS start, b.memory_usage AS end, a.user_defined, a.level '
 		sql += 'FROM trace a JOIN trace b ON (a.level = b.level AND a.function_number = b.function_number AND b.entry = 1) '
 		sql += 'WHERE a.entry = 0 AND a.memory_usage <> b.memory_usage ORDER BY a.level ASC'
-		offset_x = self.width  / self.total_levels
-		offset_y = self.height / self.total_levels
+		offset_x = self.width  / (self.total_levels * 2)
+		offset_y = self.height / (self.total_levels * 2)
+		first_level = None
+		width_offset = offset_y if offset_y < offset_x else offset_x
 		for function_name, start, end, user_defined, level in cursor.execute(sql):
+			if first_level is None:
+				first_level = level
 			start, end = self.radiant(start,end)
-			top, height = (self.total_levels - level) * offset_y + 20, self.height - (offset_y * (self.total_levels - level)) -20
-			left, width = (self.total_levels - level) * offset_x + 20, self.width  - (offset_x * (self.total_levels - level)) -20
-			pos = left,top,width,height
+			reduce_k = self.total_levels - level
+			top, height = reduce_k * offset_y + 20 + (width_offset/2), self.height - (offset_y * reduce_k) - 20 - (width_offset/2)
+			left, w = reduce_k * offset_x + 20 + (width_offset/2), self.width  - (offset_x * reduce_k) - 20 - (width_offset/2)
+			pos = left,top,w,height
 			color = self.config.get('primary_color' if user_defined == 1 else 'secondary_color')
 			level_tag = 'level%s' % str(level)
 			options = {
 				'start'         : start,
 				'extent'        : end,
 				'activeoutline' : self.config.get('tertiary_color'),
-				'outline'       : self.config.get('neutral_color'),
+				'outline'       : self.config.get('neutral_color') if level is first_level else color,
 				'fill'          : color,
-				'tags'          : ('actor','radiant',level_tag)
+				'tags'          : ('actor','radiant',level_tag),
+				'style'         : 'pieslice' if level == first_level else 'arc',
+				'width'         : 1 if level == first_level else width_offset
 			}
 			self.canvas.create_arc(pos,**options)
+			self.canvas.update_idletasks()
 		cursor.close()
 		for _x in range(self.total_levels,0):
 			self.canvas.tag_raise('level%s' % _x)
@@ -41,7 +49,8 @@ class Stage():
 		self.canvas.tag_bind('radiant',"<Button-1>",self.onMouseClick)
 		
 	def destroy(self):
-		pass
+		self.canvas.delete('actor')
+		self.canvas.update_idletasks()
 
 	def resize(self,width,height):
 		pass

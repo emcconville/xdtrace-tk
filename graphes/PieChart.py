@@ -1,5 +1,5 @@
 import sqlite3
-class Stage():
+class Stage(object):
 	MENU_TITLE = 'Pie Chart'
 	def build(self,canvas,db_path,config):
 		'''Render graph from database'''

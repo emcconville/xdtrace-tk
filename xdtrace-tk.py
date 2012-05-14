@@ -23,7 +23,7 @@ class Application(Frame) :
 		if len(filename) > 0 :
 			self.db_path = Import(self.CANVAS,self.rc).process(filename)
 			self.resetCanvas()
-			self.buildCanvas(0)
+			self.buildCanvas(2)
 	
 	def buildCanvas(self,index):
 		try:
