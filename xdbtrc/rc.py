@@ -25,6 +25,11 @@ class Preferences:
 	}
 	def __init__(self):
 		'''Generate rc filename, and load existing rc if found.'''
+		
+		# Create private copy of defaults
+		self._attr = self.attr
+		
+		# Look for, and load, previous rc
 		self.rc = os.path.join(os.path.dirname(os.path.abspath(__file__)),'xdbtrc.rc')
 		if os.path.exists(self.rc):
 			fh = open(self.rc,'rb')
@@ -47,12 +52,18 @@ class Preferences:
 		self.attr[k] = v
 	
 	def get_geometry(self):
+		'''Format attributes to tk geometry string'''
 		return '%dx%d+%d+%d' % (self.attr['width'],self.attr['height'],self.attr['root_x'],self.attr['root_y'])
 	
 	def set_geometry(self,geo):
+		'''Parse geometry string to attributes'''
 		cords = geo.split('+')
 		self.attr['width'], self.attr['height'] = map(int,cords[0].split('x'))
 		self.attr['root_x'], self.attr['root_y'] = map(int,cords[1:])
+	
+	def restore_defaults(self):
+		'''Return all attributes to original values'''
+		self.attr = self._attr
 
 class Preferences_Dialog(tkSimpleDialog.Dialog):
 	'''
@@ -73,12 +84,23 @@ class Preferences_Dialog(tkSimpleDialog.Dialog):
 		ri = -1
 		for key, message in self.attr_message.items():
 			ri += 1
-			Label(master,text=message).grid(row=ri)
+			Label(master,text=message,anchor="w").grid(row=ri)
 			_t = Entry(master)
 			_t.grid(row=ri,column=1)
 			_t.insert(0,self.parent.rc.get(key))
 			setattr(self,key,_t)
-			
+		ri += 1
+		Label(master,text="Restore values", anchor="w").grid(row=ri)
+		Button(master,text="Defaults",command=self.restore_defaults).grid(row=ri,column=1)
+	
+	def restore_defaults(self):
+		self.parent.rc.restore_defaults()
+		for key in self.attr_message:
+			_t = getattr(self,key)
+			_t.delete(0,'end')
+			_t.insert(0,self.parent.rc.get(key))
+		return self.apply()
+	
 	def apply(self):
 		'''See tkSimpleDialog.Dialog.apply'''
 		changes = {}
