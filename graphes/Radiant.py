@@ -30,10 +30,10 @@ class Stage(object):
 				'start'         : start,
 				'extent'        : end,
 				'activeoutline' : self.config.get('tertiary_color'),
+				'activefill'    : self.config.get('tertiary_color'),
 				'outline'       : self.config.get('background_color') if level is first_level else color,
 				'fill'          : color,
 				'tags'          : ('actor','radiant',level_tag),
-				#'start'         : 90,
 				'style'         : 'pieslice' if level == first_level else 'arc',
 				'width'         : 1 if level == first_level else (padding/2)
 			}
