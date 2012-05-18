@@ -100,6 +100,7 @@ class Import:
 			if results is not None:
 				cursor.execute('''INSERT INTO trace VALUES (?,?,?,?,?,?,?,?,?,?)''',results.groups())
 				continue
+		self._canvas.update_idletasks()
 		self._canvas.coords(self._prog,self._width,self._top,self._width*2,self._top+10)
 		self._canvas.update_idletasks()
 		cursor.close()
