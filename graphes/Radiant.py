@@ -42,12 +42,12 @@ class Stage(object):
 		cursor.close()
 		for _x in range(self.total_levels,0):
 			self.canvas.tag_raise('level%s' % _x)
-		self.canvas.tag_bind('radiant',"<Enter>",self.onMouseEnter)
-		self.canvas.tag_bind('radiant',"<Leave>",self.onMouseLeave)
-		self.canvas.tag_bind('radiant',"<Motion>",self.onMouseMove)
-		self.canvas.tag_bind('radiant',"<Button-1>",self.onMouseClick)
+		self.canvas.tag_bind('radiant','<Enter>',self.onMouseEnter)
+		self.canvas.tag_bind('radiant','<Leave>',self.onMouseLeave)
+		self.canvas.tag_bind('radiant','<Motion>',self.onMouseMove)
+		self.canvas.tag_bind('radiant','<Button-1>',self.onMouseClick)
 		self.canvas.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
-		self.canvas.create_text(10,10,fill='',text="Hello",anchor="nw",tags=('actor','tooltext'),font="Helvetica 12")
+		self.canvas.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
 		
 	def destroy(self):
 		self.canvas.delete('actor')
@@ -61,7 +61,7 @@ class Stage(object):
 
 	def onMouseEnter(self,event):
 		for tag in self.canvas.gettags('current'):
-			results = re.match(r"r(?P<level>\d+)-(?P<func_num>\d+)",tag)
+			results = re.match(r'r(?P<level>\d+)-(?P<func_num>\d+)',tag)
 			if results is not None:
 				args = {
 					'level' : results.group('level'),
@@ -135,5 +135,5 @@ class Stage(object):
 		width = 0;
 		for _n in data:
 			if len(_n) > width:
-				width = len(_n)
+				width = len(_n)+1
 		return '\n'.join(data), width * 6, height

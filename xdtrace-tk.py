@@ -34,7 +34,7 @@ class Application(Frame) :
 			if self.rc is None:
 				raise Exception('Run-Configuration')
 		except Exception as e:
-			print "[%s] is undefined" % e
+			print '[%s] is undefined' % e
 			return
 		self.resetCanvas()
 		self.stage = self.graphes[index]()
@@ -55,28 +55,28 @@ class Application(Frame) :
 	def loadGraphes(self):
 		for root, dirs, files in os.walk(os.path.join('.','graphes')):
 			for fname in files:
-				_name = re.match(r"^([A-Z](.*?))\.py$",fname)
+				_name = re.match(r'^([A-Z](.*?))\.py$',fname)
 				if _name is not None:
-					module = __import__("graphes.%s" % _name.group(1))
+					module = __import__('graphes.%s' % _name.group(1))
 					graph = module.__dict__[_name.group(1)]
 					self.graphes.append(graph.Stage)
 		
 	def initMenu(self):
 		self.MENU_BAR = Menu(self.master)
 		self.F_MENU = Menu(self.MENU_BAR,tearoff=0)
-		self.F_MENU.add_command(label='Open',accelerator="Cmd+O",command=self.loadFile)
+		self.F_MENU.add_command(label='Open',accelerator='Cmd+O',command=self.loadFile)
 		self.F_MENU.add_separator()
 		self.F_MENU.add_command(label='Preferences',command=self.pref_dialog)
 		self.F_MENU.add_separator()
-		self.F_MENU.add_command(label='Close',accelerator="Cmd+W",command=self.resetCanvas)
-		self.F_MENU.add_command(label='Quit', accelerator="Cmd+Q",command=self.close)
+		self.F_MENU.add_command(label='Close',accelerator='Cmd+W',command=self.resetCanvas)
+		self.F_MENU.add_command(label='Quit', accelerator='Cmd+Q',command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
 		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
 		i = 0
 		for graph in self.graphes:
 			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.buildCanvas(i))
 			i+=1
-		self.MENU_BAR.add_cascade(label="Views",menu=self.V_MENU)
+		self.MENU_BAR.add_cascade(label='Views',menu=self.V_MENU)
 		self.master.config(menu=self.MENU_BAR)
 		
 	def initWidgets(self):
@@ -121,5 +121,5 @@ if __name__ == '__main__':
 	try:
 	  root.destroy()
 	except TclError :
-		print "Nothing to destroy"
+		print 'Nothing to destroy'
 	exit(0)
