@@ -1,28 +1,32 @@
 import hashlib,os,re,sqlite3
 
-class Import:
+class Import(object):
 
-	def __init__(self,canvas,rc):
+	def __init__(self,master):
 		self._x = 0.0;
-		self._canvas = canvas
-		self._width = int(self._canvas.winfo_width() / 3.333)
-		self._top   = int(self._canvas.winfo_height() / 2)
+		self._width = int(master.CANVAS.winfo_width() / 3.333)
+		self._top   = int(master.CANVAS.winfo_height() / 2)
 		self.database = None
-		self._text = self._canvas.create_text(self._width,self._top-16,text='',tags='actor',justify='left',width=self._width,anchor='nw',fill='#CCCCCC',font='Helvetica 12')
-		self._border = self._canvas.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill='white',outline=rc.get('primary_color'),tags='actor')
-		self._prog = self._canvas.create_rectangle(self._width,self._top,self._x,self._top+10,fill=rc.get('primary_color'),outline=rc.get('primary_color'),tags='actor')
+		self._text = master.CANVAS.create_text(self._width,self._top-16,text='',tags='actor',justify='left',width=self._width,anchor='nw',fill=master.rc.get('neutral_color'),font='Helvetica 12')
+		self._border = master.CANVAS.create_rectangle(self._width,self._top,self._width*2,self._top+10,fill='white',outline=master.rc.get('primary_color'),tags='actor')
+		self._prog = master.CANVAS.create_rectangle(self._width,self._top,self._x,self._top+10,fill=master.rc.get('primary_color'),outline=master.rc.get('primary_color'),tags='actor')
 		self._total = 0.0
+		self.app = master
 
 	def process(self,filename):
 		self.filename = filename
 		self.checksum()
 		if not self.exists():
+			print 'creating database'
 			self.create_database()
 			self.import_data()
+		else:
+			self.app.CANVAS.itemconfigure(self._text,text='Using existing data')
+		self.show_graphes()
 		return self.database
 	
 	def checksum(self):
-		self._canvas.itemconfig(self._text,text='Checksum...')
+		self.app.CANVAS.itemconfig(self._text,text='Checksum...')
 		md5 = hashlib.md5()
 		self._total = float(os.path.getsize(self.filename))
 		fh = open(self.filename)
@@ -35,12 +39,12 @@ class Import:
 			x -= x % 0.01
 			x = int(self._width * x)
 			if x is not self._x:
-				self._canvas.coords(self._prog,self._width,self._top,self._width + x,self._top+10)
-				self._canvas.update_idletasks()
+				self.app.CANVAS.coords(self._prog,self._width,self._top,self._width + x,self._top+10)
+				self.app.CANVAS.update_idletasks()
 				self._x = x
 		fh.close()
-		self._canvas.coords(self._prog,self._width,self._top,self._width*2,self._top+10)
-		self._canvas.update_idletasks()
+		self.app.CANVAS.coords(self._prog,self._width,self._top,self._width*2,self._top+10)
+		self.app.CANVAS.update_idletasks()
 		self._md5 = md5.hexdigest()
 		self.database = os.path.join(os.path.dirname(os.path.abspath(__file__)),'xdebug-'+self._md5+'.sqlite3')
 		return self._md5
@@ -67,9 +71,10 @@ class Import:
 		cursor.close()
 	
 	def import_data(self):
-		self._canvas.itemconfigure(self._text,text='Importing data...')
+		self.app.CANVAS.itemconfigure(self._text,text='Importing data...')
+		self.app.CANVAS.update_idletasks()
 		self._x = 0.0
-		self._canvas.coords(self._prog,self._width,self._top,self._width,self._top+10)
+		self.app.CANVAS.coords(self._prog,self._width,self._top,self._width,self._top+10)
 		dh = sqlite3.connect(self.database)
 		dh.isolation_level = None 
 		cursor = dh.cursor()
@@ -79,8 +84,9 @@ class Import:
 			x -= x % 0.01
 			x = int(self._width * x)
 			if x is not self._x:
-				self._canvas.coords(self._prog,self._width,self._top,self._width+x,self._top+10)
-				self._canvas.update_idletasks()
+				self.app.CANVAS.update_idletasks()
+				self.app.CANVAS.coords(self._prog,self._width,self._top,self._width+x,self._top+10)
+				self.app.CANVAS.update_idletasks()
 				self._x = x
 			info_regex = r'(^Version:\s+(?P<version>.*$)|^TRACE (?P<date_type>START|END)\s+\[(?P<date_time>.*?)\]$)'
 			results = re.match(info_regex, line )
@@ -100,7 +106,14 @@ class Import:
 			if results is not None:
 				cursor.execute('''INSERT INTO trace VALUES (?,?,?,?,?,?,?,?,?,?)''',results.groups())
 				continue
-		self._canvas.update_idletasks()
-		self._canvas.coords(self._prog,self._width,self._top,self._width*2,self._top+10)
-		self._canvas.update_idletasks()
 		cursor.close()
+		self.app.CANVAS.itemconfigure(self._text,text='Importing data...Complete')
+		self.app.CANVAS.coords(self._prog,self._width,self._top,self._width*2,self._top+10)
+		self.app.CANVAS.update_idletasks()
+	
+	def show_graphes(self):
+		_t, _k = self._top + 20, 1
+		for obj in self.app.graphes:
+			_m = u'\u2318 %d\t%s' % (_k,obj.MENU_TITLE)
+			self.app.CANVAS.create_text(self._width,_t,text=_m,tags='actor',justify='left',width=self._width,anchor='nw',fill=self.app.rc.get('neutral_color'),font='Helvetica 12')
+			_t, _k = _t + 16, _k + 1

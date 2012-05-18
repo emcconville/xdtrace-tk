@@ -21,9 +21,9 @@ class Application(Frame) :
 		}
 		filename = tkFileDialog.askopenfilename(**foptions)
 		if len(filename) > 0 :
-			self.db_path = Import(self.CANVAS,self.rc).process(filename)
-			self.resetCanvas()
-			self.buildCanvas(2)
+			importer = Import(self)
+			self.db_path = importer.process(filename)
+			del importer
 	
 	def buildCanvas(self,index):
 		try:
