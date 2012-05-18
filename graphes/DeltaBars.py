@@ -1,5 +1,5 @@
 import sqlite3
-class Stage():
+class Stage(object):
 	MENU_TITLE = 'Delta Bars'
 	def build(self,canvas,db_path,config):
 		self.canvas = canvas
