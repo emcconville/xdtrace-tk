@@ -85,9 +85,7 @@ class Application(Frame) :
 		self.CANVAS = Canvas(self,width=self['width'],height=self['height'])
 		self.CANVAS.pack(fill='both', expand=1)
 		self.bind('<Configure>',self._update_canvas)
-		self.bind_all('<Command-o>',self.loadFile)
-		self.bind_all('<Command-w>',self.resetCanvas)
-		self.bind_all('<Command-q>',self.close)
+		self.bind_all('<Command-Key>',self._shortCut)
 		
 	def close(self,event=None):
 		self.rc.save()
@@ -111,10 +109,19 @@ class Application(Frame) :
 		except Exception:
 				pass
 		self.CANVAS.update_idletasks()
-
-
-
-
+	
+	def _shortCut(self,event):
+		_c = event.char
+		if _c is not None:
+			if _c == 'o':
+				self.loadFile()
+			elif _c == 'w':
+				self.resetCanvas()
+			elif _c == 'q':
+				self.close()
+			elif _c.isdigit() and int(_c) in range(1,len(self.graphes)+1):
+				self.buildCanvas(int(_c)-1)
+		
 if __name__ == '__main__':
 	root = Tk()
 	Application(root).mainloop()
