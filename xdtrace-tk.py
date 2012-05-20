@@ -21,9 +21,7 @@ class Application(Frame) :
 		}
 		filename = tkFileDialog.askopenfilename(**foptions)
 		if len(filename) > 0 :
-			importer = Import(self)
-			self.db_path = importer.process(filename)
-			del importer
+			self.db_path = Import(self).process(filename)
 	
 	def buildCanvas(self,index):
 		try:
@@ -82,11 +80,14 @@ class Application(Frame) :
 	def initWidgets(self):
 		self.loadGraphes()
 		self.initMenu()
-		self.CANVAS = Canvas(self,width=self['width'],height=self['height'])
-		self.CANVAS.pack(fill='both', expand=1)
+		self.VS = Scrollbar(self,orient='vertical')
+		self.CANVAS = Canvas(self,yscrollcommand=self._yset)
+		self.CANVAS.pack(fill='both', expand=1, side='left')
+		self.VS.config(command=self.CANVAS.yview)
+		self.VS.pack(fill='y',side='right')
 		self.bind('<Configure>',self._update_canvas)
 		self.bind_all('<Command-Key>',self._shortCut)
-		
+
 	def close(self,event=None):
 		self.rc.save()
 		if self.db_path is not None and os.path.exists(self.db_path):
@@ -121,7 +122,15 @@ class Application(Frame) :
 				self.close()
 			elif _c.isdigit() and int(_c) in range(1,len(self.graphes)+1):
 				self.buildCanvas(int(_c)-1)
+	
+	def _yset(self,start,end):
+		if start == '0.0' and end == '1.0':
+			self.VS.pack_forget()
+		else:
+			self.VS.pack(fill='y',side='right')
+			self.VS.set(start,end)
 		
+	
 if __name__ == '__main__':
 	root = Tk()
 	Application(root).mainloop()

@@ -48,6 +48,7 @@ class Stage(object):
 		self.canvas.tag_bind('radiant','<Button-1>',self.onMouseClick)
 		self.canvas.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
 		self.canvas.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
+		self.canvas.config(scrollregion=self.canvas.bbox('all'))
 		
 	def destroy(self):
 		self.canvas.delete('actor')
