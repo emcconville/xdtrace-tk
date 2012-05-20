@@ -1,5 +1,5 @@
 import sqlite3
-class Stage():
+class Stage(object):
 	MENU_TITLE = 'Delta Bars'
 	def build(self,canvas,db_path,config):
 		self.canvas = canvas
@@ -27,6 +27,7 @@ class Stage():
 			self.canvas.create_text(width+10,top,text=info,fill=self.config.get('neutral_color'),tags="actor",anchor="nw",font="Helvetica 9")
 			self.lefts[level-1] = width
 			top += 10
+		self.canvas.config(scrollregion=self.canvas.bbox('all'))
 
 		
 	def destroy(self):

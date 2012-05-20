@@ -84,14 +84,14 @@ class Preferences_Dialog(tkSimpleDialog.Dialog):
 		ri = -1
 		for key, message in self.attr_message.items():
 			ri += 1
-			Label(master,text=message,anchor="w").grid(row=ri)
+			Label(master,text=message,anchor='w').grid(row=ri)
 			_t = Entry(master)
 			_t.grid(row=ri,column=1)
 			_t.insert(0,self.parent.rc.get(key))
 			setattr(self,key,_t)
 		ri += 1
-		Label(master,text="Restore values", anchor="w").grid(row=ri)
-		Button(master,text="Defaults",command=self.restore_defaults).grid(row=ri,column=1)
+		Label(master,text='Restore values', anchor='w').grid(row=ri)
+		Button(master,text='Defaults',command=self.restore_defaults).grid(row=ri,column=1)
 	
 	def restore_defaults(self):
 		self.parent.rc.restore_defaults()
