@@ -35,8 +35,8 @@ class Application(Frame) :
 			print '[%s] is undefined' % e
 			return
 		self.resetCanvas()
-		self.stage = self.graphes[index]()
-		self.stage.build(self.CANVAS,self.db_path,self.rc)
+		self.stage = self.graphes[index](self)
+		self.stage.build()
 		
 	def resetCanvas(self,event=None):
 		try:

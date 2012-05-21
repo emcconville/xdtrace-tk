@@ -1,11 +1,10 @@
 import sqlite3
-class Stage(object):
+import _Stage
+class Stage(_Stage._Stage):
 	MENU_TITLE = 'Delta Bars'
-	def build(self,canvas,db_path,config):
-		self.canvas = canvas
-		self.config = config
-		self.width = self.canvas.winfo_width() - 40
-		dh = sqlite3.connect(db_path)
+	def build(self):
+		self.width = self.master.CANVAS.winfo_width() - 40
+		dh = sqlite3.connect(self.master.db_path)
 		cursor = dh.cursor()
 		limits_sql = 'SELECT MIN(memory_usage), MAX(memory_usage), MAX(level) FROM trace'
 		self.min_memory,self.max_memory, self.max_level = cursor.execute(limits_sql).fetchone()
@@ -21,13 +20,13 @@ class Stage(object):
 		for function_name, memory_delta, user_defined, level in cursor.execute(sql):
 			left = self.getLeft(level)
 			width = left + int((memory_delta / self.total_memory) * self.width)
-			color = self.config.get("primary_color" if user_defined > 0 else "secondary_color")
-			self.canvas.create_rectangle(left,top,width,top+10, fill=color, outline=color,tags=("actor"))
+			color = self.master.rc.get("primary_color" if user_defined > 0 else "secondary_color")
+			self.master.CANVAS.create_rectangle(left,top,width,top+10, fill=color, outline=color,tags=("actor"))
 			info = "%s %c%d [%d]" % (function_name,'+' if memory_delta > 0 else '-' , memory_delta,level)
-			self.canvas.create_text(width+10,top,text=info,fill=self.config.get('neutral_color'),tags="actor",anchor="nw",font="Helvetica 9")
+			self.master.CANVAS.create_text(width+10,top,text=info,fill=self.master.rc.get('neutral_color'),tags="actor",anchor="nw",font="Helvetica 9")
 			self.lefts[level-1] = width
 			top += 10
-		self.canvas.config(scrollregion=self.canvas.bbox('all'))
+		self.master.CANVAS.config(scrollregion=(0,0)+self.master.CANVAS.bbox('all')[2:])
 
 		
 	def destroy(self):

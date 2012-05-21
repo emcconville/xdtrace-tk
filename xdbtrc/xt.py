@@ -17,7 +17,6 @@ class Import(object):
 		self.filename = filename
 		self.checksum()
 		if not self.exists():
-			print 'creating database'
 			self.create_database()
 			self.import_data()
 		else:

@@ -1,14 +1,12 @@
 import sqlite3, math, re
-
-class Stage(object):
+import _Stage
+class Stage(_Stage._Stage):
 	MENU_TITLE = 'Radiant Dial'
 	
-	def build(self,canvas,db_path,config):
-		self.canvas = canvas
-		self.config = config
-		self.width = self.canvas.winfo_width()
-		self.height = self.canvas.winfo_height()
-		self.dh = sqlite3.connect(db_path)
+	def build(self):
+		self.width = self.master.CANVAS.winfo_width()
+		self.height = self.master.CANVAS.winfo_height()
+		self.dh = sqlite3.connect(self.master.db_path)
 		cursor = self.dh.cursor()
 		limits_sql = 'SELECT MIN(memory_usage), MAX(memory_usage), MAX(level) FROM trace'
 		self.memory_min, self.memory_max, self.total_levels = cursor.execute(limits_sql).fetchone()
@@ -25,34 +23,34 @@ class Stage(object):
 			growth = self.width-scale
 			padding = offset * 0.5
 			pos = scale+padding,scale+padding,growth-padding,growth-padding
-			color = self.config.get('primary_color' if user_defined == 1 else 'secondary_color')
+			color = self.master.rc.get('primary_color' if user_defined == 1 else 'secondary_color')
 			options = {
 				'start'         : start,
 				'extent'        : end,
-				'activeoutline' : self.config.get('tertiary_color'),
-				'activefill'    : self.config.get('tertiary_color'),
+				'activeoutline' : self.master.rc.get('tertiary_color'),
+				'activefill'    : self.master.rc.get('tertiary_color'),
 				'outline'       : color,
 				'fill'          : color,
 				'tags'          : ('actor','radiant','r%s-%s' % (level,func_num),'level%s' % str(level)),
 				'style'         : 'arc',
 				'width'         : offset * 0.5
 			}
-			self.canvas.create_arc(pos,**options)
-			self.canvas.update_idletasks()
+			self.master.CANVAS.create_arc(pos,**options)
+			self.master.CANVAS.update_idletasks()
 		cursor.close()
 		for _x in range(self.total_levels,0):
-			self.canvas.tag_raise('level%s' % _x)
-		self.canvas.tag_bind('radiant','<Enter>',self.onMouseEnter)
-		self.canvas.tag_bind('radiant','<Leave>',self.onMouseLeave)
-		self.canvas.tag_bind('radiant','<Motion>',self.onMouseMove)
-		self.canvas.tag_bind('radiant','<Button-1>',self.onMouseClick)
-		self.canvas.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
-		self.canvas.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
-		self.canvas.config(scrollregion=self.canvas.bbox('all'))
+			self.master.CANVAS.tag_raise('level%s' % _x)
+		self.master.CANVAS.tag_bind('radiant','<Enter>',self.onMouseEnter)
+		self.master.CANVAS.tag_bind('radiant','<Leave>',self.onMouseLeave)
+		self.master.CANVAS.tag_bind('radiant','<Motion>',self.onMouseMove)
+		self.master.CANVAS.tag_bind('radiant','<Button-1>',self.onMouseClick)
+		self.master.CANVAS.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
+		self.master.CANVAS.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
+		self.master.CANVAS.config(scrollregion=self.master.CANVAS.bbox('all'))
 		
 	def destroy(self):
-		self.canvas.delete('actor')
-		self.canvas.update_idletasks()
+		self.master.CANVAS.delete('actor')
+		self.master.CANVAS.update_idletasks()
 
 	def resize(self,width,height):
 		pass
@@ -61,14 +59,14 @@ class Stage(object):
 		pass
 
 	def onMouseEnter(self,event):
-		for tag in self.canvas.gettags('current'):
+		for tag in self.master.CANVAS.gettags('current'):
 			results = re.match(r'r(?P<level>\d+)-(?P<func_num>\d+)',tag)
 			if results is not None:
 				args = {
 					'level' : results.group('level'),
 					'function_number' : results.group('func_num'),
-					'x' : event.x,
-					'y' : event.y
+					'x' : self.master.CANVAS.canvasx(event.x),
+					'y' : self.master.CANVAS.canvasy(event.y)
 				}
 				self.showToolTip(**args)
 
@@ -76,7 +74,7 @@ class Stage(object):
 		self.hideToolTip()
 
 	def onMouseMove(self,event):
-		self.moveToolTip(x=event.x,y=event.y)
+		self.moveToolTip(x=self.master.CANVAS.canvasx(event.x),y=self.master.CANVAS.canvasy(event.y))
 	
 	def radiant(self,start,end):
 		start = math.floor(((start - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
@@ -88,27 +86,27 @@ class Stage(object):
 		self._tto = 5
 		bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
 		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
-		self.canvas.coords('tooltip',bb)
-		self.canvas.coords('tooltext',_x,_y)
-		self.canvas.update_idletasks()
-		self.canvas.itemconfig('tooltip',fill=self.config.get('background_color'),outline=self.config.get('neutral_color'))
-		self.canvas.itemconfig('tooltext',fill=self.config.get('base_color'),text=message)
-		self.canvas.update_idletasks()
+		self.master.CANVAS.coords('tooltip',bb)
+		self.master.CANVAS.coords('tooltext',_x,_y)
+		self.master.CANVAS.update_idletasks()
+		self.master.CANVAS.itemconfig('tooltip',fill=self.master.rc.get('background_color'),outline=self.master.rc.get('neutral_color'))
+		self.master.CANVAS.itemconfig('tooltext',fill=self.master.rc.get('base_color'),text=message)
+		self.master.CANVAS.update_idletasks()
 	
 	def moveToolTip(self,**args):
-		self.canvas.update_idletasks()
+		self.master.CANVAS.update_idletasks()
 		bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
 		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
-		self.canvas.coords('tooltip',bb)
-		self.canvas.coords('tooltext',_x,_y)
-		self.canvas.update_idletasks()
+		self.master.CANVAS.coords('tooltip',bb)
+		self.master.CANVAS.coords('tooltext',_x,_y)
+		self.master.CANVAS.update_idletasks()
 	
 	def hideToolTip(self):
-		self.canvas.coords('tooltip',0,0,0,0)
-		self.canvas.itemconfig('tooltip',fill='',outline='')
-		self.canvas.coords('tooltext',0,0)
-		self.canvas.itemconfig('tooltext',fill='')
-		self.canvas.update_idletasks()
+		self.master.CANVAS.coords('tooltip',0,0,0,0)
+		self.master.CANVAS.itemconfig('tooltip',fill='',outline='')
+		self.master.CANVAS.coords('tooltext',0,0)
+		self.master.CANVAS.itemconfig('tooltext',fill='')
+		self.master.CANVAS.update_idletasks()
 	
 	def getInfo(self,level,function_number):
 		cursor = self.dh.cursor()
