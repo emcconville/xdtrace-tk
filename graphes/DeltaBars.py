@@ -1,6 +1,6 @@
 import sqlite3
 import _Stage
-class Stage(_Stage._Stage):
+class Stage(_Stage.Base):
 	MENU_TITLE = 'Delta Bars'
 	def build(self):
 		self.width = self.master.CANVAS.winfo_width() - 40

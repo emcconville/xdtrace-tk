@@ -1,6 +1,6 @@
 import sqlite3, math, re
 import _Stage
-class Stage(_Stage._Stage):
+class Stage(_Stage.Base):
 	MENU_TITLE = 'Radiant Dial'
 	
 	def build(self):
@@ -48,91 +48,9 @@ class Stage(_Stage._Stage):
 		self.master.CANVAS.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
 		self.master.CANVAS.config(scrollregion=self.master.CANVAS.bbox('all'))
 		
-	def destroy(self):
-		self.master.CANVAS.delete('actor')
-		self.master.CANVAS.update_idletasks()
-
-	def resize(self,width,height):
-		pass
-	
-	def onMouseClick(self,event):
-		pass
-
-	def onMouseEnter(self,event):
-		for tag in self.master.CANVAS.gettags('current'):
-			results = re.match(r'r(?P<level>\d+)-(?P<func_num>\d+)',tag)
-			if results is not None:
-				args = {
-					'level' : results.group('level'),
-					'function_number' : results.group('func_num'),
-					'x' : self.master.CANVAS.canvasx(event.x),
-					'y' : self.master.CANVAS.canvasy(event.y)
-				}
-				self.showToolTip(**args)
-
-	def onMouseLeave(self,event):
-		self.hideToolTip()
-
-	def onMouseMove(self,event):
-		self.moveToolTip(x=self.master.CANVAS.canvasx(event.x),y=self.master.CANVAS.canvasy(event.y))
 	
 	def radiant(self,start,end):
 		start = math.floor(((start - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
 		end   = math.floor(((end   - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
 		return start, end-start
 		
-	def showToolTip(self,**args):
-		message, self._ttw, self._tth = self.getInfo(args['level'],args['function_number'])
-		self._tto = 5
-		bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
-		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
-		self.master.CANVAS.coords('tooltip',bb)
-		self.master.CANVAS.coords('tooltext',_x,_y)
-		self.master.CANVAS.update_idletasks()
-		self.master.CANVAS.itemconfig('tooltip',fill=self.master.rc.get('background_color'),outline=self.master.rc.get('neutral_color'))
-		self.master.CANVAS.itemconfig('tooltext',fill=self.master.rc.get('base_color'),text=message)
-		self.master.CANVAS.update_idletasks()
-	
-	def moveToolTip(self,**args):
-		self.master.CANVAS.update_idletasks()
-		bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
-		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
-		self.master.CANVAS.coords('tooltip',bb)
-		self.master.CANVAS.coords('tooltext',_x,_y)
-		self.master.CANVAS.update_idletasks()
-	
-	def hideToolTip(self):
-		self.master.CANVAS.coords('tooltip',0,0,0,0)
-		self.master.CANVAS.itemconfig('tooltip',fill='',outline='')
-		self.master.CANVAS.coords('tooltext',0,0)
-		self.master.CANVAS.itemconfig('tooltext',fill='')
-		self.master.CANVAS.update_idletasks()
-	
-	def getInfo(self,level,function_number):
-		cursor = self.dh.cursor()
-		sql = '''
-			SELECT 
-				a.function_name,
-				a.filename,
-				a.line_number,
-				b.memory_usage - a.memory_usage AS memory_usage,
-				b.time_index - a.time_index AS time_index
-			FROM trace a 
-				JOIN trace b 
-					ON (a.level = b.level AND a.function_number = b.function_number AND b.entry = 1)
-			WHERE 
-				a.level = %d 
-				AND a.function_number = %d 
-		''' % (int(level),int(function_number))
-		function_name,filename,line_number,memory_usage,time_index = cursor.execute(sql).fetchone()
-		data = [
-			'Function: %s' % function_name,
-			'Memory: %.4fkb' % (memory_usage / 1024.0),
-			'Time: %.4fms' % time_index
-		]
-		height = len(data) * 17;
-		width = 0;
-		for _n in data:
-			if len(_n) > width:
-				width = len(_n)+1
-		return '\n'.join(data), width * 6, height
