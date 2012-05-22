@@ -1,4 +1,4 @@
-import sqlite3, math, re
+import sqlite3, re
 import _Stage
 class Stage(_Stage.Base):
 	MENU_TITLE = 'Radiant Dial'
@@ -41,8 +41,8 @@ class Stage(_Stage.Base):
 		
 	
 	def radiant(self,start,end):
-		start = math.floor(((start - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
-		end   = math.floor(((end   - self.memory_min) / float(self.memory_max - self.memory_min)) * 360)
+		start = int(((start - self.memory_min) / float(self.memory_max - self.memory_min)) * 360) + 90
+		end   = int(((end   - self.memory_min) / float(self.memory_max - self.memory_min)) * 360) + 90
 		return start, end-start
 	
 	def _create_bbox(self,level):
