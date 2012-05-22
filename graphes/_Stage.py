@@ -4,6 +4,8 @@ class Base:
 	_tto = 5
 	def __init__(self,master):
 		self.master = master
+		self.master.CANVAS.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
+		self.master.CANVAS.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
 	def build(self): pass
 	def destroy(self):
 		self.master.CANVAS.delete('actor')
@@ -92,6 +94,12 @@ class Base:
 			if results is not None:
 				return {'level' : results.group('level'),'function_number' : results.group('func_num')}
 		return None
+	
+	def update_scrollregion(self):
+		self.master.CANVAS.config(scrollregion=(0,0)+self.master.CANVAS.bbox('all')[2:])
+	
+	def update_idletasks(self):
+		self.master.CANVAS.update_idletasks()
 	
 	def _create_tooltip_tag(self,level,function_number):
 		return 'tt%s-%s' % (str(level),str(function_number))
