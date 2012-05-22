@@ -2,7 +2,7 @@ import sqlite3, re
 import _Stage
 class Stage(_Stage.Base):
 	MENU_TITLE = 'Radiant Dial'
-	
+	ACTOR_TAG = 'radiant'
 	def build(self):
 		self.width = self.master.CANVAS.winfo_width()
 		self.height = self.master.CANVAS.winfo_height()
@@ -26,17 +26,17 @@ class Stage(_Stage.Base):
 				'activefill'    : self.master.rc.get('tertiary_color'),
 				'outline'       : color,
 				'fill'          : color,
-				'tags'          : ('actor','radiant',self._create_tooltip_tag(level,func_num),self._create_level_tag(level)),
+				'tags'          : ('actor',self.ACTOR_TAG,self._create_tooltip_tag(level,func_num),self._create_level_tag(level)),
 				'style'         : 'arc',
 				'width'         : self._offset() * 0.5
 			}
 			self.master.CANVAS.create_arc(self._create_bbox(level),**options)
 			self.update_idletasks()
 		cursor.close()
-		self.master.CANVAS.tag_bind('radiant','<Enter>',self.onMouseEnter)
-		self.master.CANVAS.tag_bind('radiant','<Leave>',self.onMouseLeave)
-		self.master.CANVAS.tag_bind('radiant','<Motion>',self.onMouseMove)
-		self.master.CANVAS.tag_bind('radiant','<Button-1>',self.onMouseClick)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Enter>',self.onMouseEnter)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Leave>',self.onMouseLeave)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Motion>',self.onMouseMove)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Button-1>',self.onMouseClick)
 		self.update_scrollregion()
 		
 	

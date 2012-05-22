@@ -88,7 +88,7 @@ class Base:
 				width = len(_n)+1
 		return '\n'.join(data), width * 6, height
 	
-	def _find_id_tag(self,tagorid="current"):
+	def _find_id_tag(self,tagorid='current'):
 		for tag in self.master.CANVAS.gettags(tagorid):
 			results = re.match(r'tt(?P<level>\d+)-(?P<func_num>\d+)',tag)
 			if results is not None:
