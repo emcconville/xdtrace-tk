@@ -1,6 +1,7 @@
 import re,sqlite3
 
 class Base:
+	_tto = 5
 	def __init__(self,master):
 		self.master = master
 	def build(self): pass
@@ -27,13 +28,6 @@ class Base:
 	def onMouseLeave(self,event):
 		self.hideToolTip()
 	
-	def _find_id_tag(self,tagorid="current"):
-		for tag in self.master.CANVAS.gettags(tagorid):
-			results = re.match(r'r(?P<level>\d+)-(?P<func_num>\d+)',tag)
-			if results is not None:
-				return {'level' : results.group('level'),'function_number' : results.group('func_num')}
-		return None
-		
 	def showToolTip(self,**args):
 		message, self._ttw, self._tth = self.getInfo(args['level'],args['function_number'])
 		self._tto = 5
@@ -63,7 +57,7 @@ class Base:
 
 	def getInfo(self,level,function_number):
 		dh = sqlite3.connect(self.master.db_path)
-		cursor = self.dh.cursor()
+		cursor = dh.cursor()
 		sql = '''
 			SELECT 
 				a.function_name,
@@ -91,3 +85,16 @@ class Base:
 			if len(_n) > width:
 				width = len(_n)+1
 		return '\n'.join(data), width * 6, height
+	
+	def _find_id_tag(self,tagorid="current"):
+		for tag in self.master.CANVAS.gettags(tagorid):
+			results = re.match(r'tt(?P<level>\d+)-(?P<func_num>\d+)',tag)
+			if results is not None:
+				return {'level' : results.group('level'),'function_number' : results.group('func_num')}
+		return None
+	
+	def _create_tooltip_tag(self,level,function_number):
+		return 'tt%s-%s' % (str(level),str(function_number))
+	
+	def _create_level_tag(self,level):
+		return 'l%s' % str(level)

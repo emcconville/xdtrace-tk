@@ -31,7 +31,7 @@ class Stage(_Stage.Base):
 				'activefill'    : self.master.rc.get('tertiary_color'),
 				'outline'       : color,
 				'fill'          : color,
-				'tags'          : ('actor','radiant','r%s-%s' % (level,func_num),'level%s' % str(level)),
+				'tags'          : ('actor','radiant',self._create_tooltip_tag(level,func_num),self._create_level_tag(level)),
 				'style'         : 'arc',
 				'width'         : offset * 0.5
 			}

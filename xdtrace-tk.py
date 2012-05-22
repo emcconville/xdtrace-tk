@@ -48,7 +48,7 @@ class Application(Frame) :
 		self.CANVAS.update_idletasks()
 	
 	def pref_dialog(self):
-		d = Preferences_Dialog(self)
+		Preferences_Dialog(self)
 		
 	def loadGraphes(self):
 		for root, dirs, files in os.walk(os.path.join('.','graphes')):
