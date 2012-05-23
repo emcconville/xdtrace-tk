@@ -37,6 +37,8 @@ class Base:
 		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
 		self.master.CANVAS.coords('tooltip',bb)
 		self.master.CANVAS.coords('tooltext',_x,_y)
+		self.master.CANVAS.tag_raise('tooltip')
+		self.master.CANVAS.tag_raise('tooltext','tooltip')
 		self.master.CANVAS.update_idletasks()
 		self.master.CANVAS.itemconfig('tooltip',fill=self.master.rc.get('background_color'),outline=self.master.rc.get('neutral_color'))
 		self.master.CANVAS.itemconfig('tooltext',fill=self.master.rc.get('base_color'),text=message)

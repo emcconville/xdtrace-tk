@@ -15,12 +15,12 @@ class Stage(_Stage.Base):
 									a.user_defined, a.level, a.function_number 
 							FROM trace a JOIN trace b 
 								ON (a.level = b.level AND a.function_number = b.function_number AND b.entry = 1) 
-							WHERE a.entry = 0 AND memory_start <> memory_end'''
+							WHERE a.entry = 0'''
 		for function_name, memory_start, memory_end, user_defined, level, function_number in cursor.execute(sql):
 			color = self.master.rc.get("primary_color" if user_defined > 0 else "secondary_color")
 			opts = {
 				'fill'    : color, 
-				'outline' : 'white',
+				'outline' : self.master.rc.get('neutral_color'),
 				'tags'    : ("actor",self.ACTOR_TAG,self._create_tooltip_tag(level,function_number))
 			}
 			self.master.CANVAS.create_rectangle(self._create_bbox(level,memory_start,memory_end), **opts)
@@ -33,5 +33,5 @@ class Stage(_Stage.Base):
 	def _create_bbox(self,level,memory_start,memory_end):
 		left = int(((memory_start-self.min_memory) / self.total_memory) * self.width) + 20
 		width = int(((memory_end-self.min_memory) / self.total_memory) * self.width) + 20
-		top = int(level) * 21 + 20
-		return left,top,width,top+20
+		top = int(level) * 20
+		return left,top,width,top+18
