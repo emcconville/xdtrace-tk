@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-from Tkinter import *
-import tkFileDialog, tkSimpleDialog
 import re, os, cPickle, hashlib, sqlite3
+import Tkinter,tkFileDialog, tkSimpleDialog
 
 from xdbtrc.xt import Import
 from xdbtrc.rc import Preferences, Preferences_Dialog
 
-class Application(Frame) :
+class Application(Tkinter.Frame) :
 	stage = db_path = None
 	graphes = []
 	width, height = 760, 360
@@ -60,8 +59,8 @@ class Application(Frame) :
 					self.graphes.append(graph.Stage)
 		
 	def initMenu(self):
-		self.MENU_BAR = Menu(self.master)
-		self.F_MENU = Menu(self.MENU_BAR,tearoff=0)
+		self.MENU_BAR = Tkinter.Menu(self.master)
+		self.F_MENU = Tkinter.Menu(self.MENU_BAR,tearoff=0)
 		self.F_MENU.add_command(label='Open',accelerator='Cmd+O',command=self.loadFile)
 		self.F_MENU.add_separator()
 		self.F_MENU.add_command(label='Preferences',command=self.pref_dialog)
@@ -69,19 +68,19 @@ class Application(Frame) :
 		self.F_MENU.add_command(label='Close',accelerator='Cmd+W',command=self.resetCanvas)
 		self.F_MENU.add_command(label='Quit', accelerator='Cmd+Q',command=self.close)
 		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
-		self.V_MENU = Menu(self.MENU_BAR,tearoff=0)
+		self.V_MENU = Tkinter.Menu(self.MENU_BAR,tearoff=1)
 		i = 0
 		for graph in self.graphes:
 			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.buildCanvas(i))
 			i+=1
 		self.MENU_BAR.add_cascade(label='Views',menu=self.V_MENU)
-		self.master.config(menu=self.MENU_BAR)
+		self.master.configure(menu=self.MENU_BAR)
 		
 	def initWidgets(self):
 		self.loadGraphes()
 		self.initMenu()
-		self.VS = Scrollbar(self,orient='vertical')
-		self.CANVAS = Canvas(self,yscrollcommand=self._yset)
+		self.VS = Tkinter.Scrollbar(self,orient='vertical')
+		self.CANVAS = Tkinter.Canvas(self,yscrollcommand=self._yset)
 		self.CANVAS.pack(fill='both', expand=1, side='left')
 		self.VS.config(command=self.CANVAS.yview)
 		self.VS.pack(fill='y',side='right')
@@ -96,7 +95,7 @@ class Application(Frame) :
 	
 	def __init__(self,master=None):
 		self.rc = Preferences()
-		Frame.__init__(self,master,width=self.rc.get('width'),height=self.rc.get('height'))
+		Tkinter.Frame.__init__(self,master,width=self.rc.get('width'),height=self.rc.get('height'))
 		self.master.title('xdbug-trace-tk')
 		self.pack(fill='both', expand=1)
 		self.initWidgets()
@@ -132,10 +131,10 @@ class Application(Frame) :
 		
 	
 if __name__ == '__main__':
-	root = Tk()
+	root = Tkinter.Tk()
 	Application(root).mainloop()
 	try:
 	  root.destroy()
-	except TclError :
+	except Tkinter.TclError :
 		print 'Nothing to destroy'
 	exit(0)
