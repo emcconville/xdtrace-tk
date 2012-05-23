@@ -1,7 +1,9 @@
 import re,sqlite3
 
 class Base:
-	_tto = 5
+	_tto = 10
+	MENU_TITLE = ''
+	ACTOR_TAG = ''
 	def __init__(self,master):
 		self.master = master
 		self.master.CANVAS.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
@@ -41,7 +43,8 @@ class Base:
 	def showToolTip(self,**args):
 		message, self._ttw, self._tth = self.getInfo(args['level'],args['function_number'])
 		self._tto = 5
-		bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
+		#bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
+		bb = self._create_tooltip_bbox(**args)
 		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
 		self.master.CANVAS.coords('tooltip',bb)
 		self.master.CANVAS.coords('tooltext',_x,_y)
@@ -54,7 +57,8 @@ class Base:
 
 	def moveToolTip(self,**args):
 		self.master.CANVAS.update_idletasks()
-		bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
+		#bb = args['x']+self._tto,args['y']+self._tto,args['x']+self._ttw+self._tto,args['y']+self._tth+self._tto
+		bb = self._create_tooltip_bbox(**args)
 		_x,_y = map(lambda x: int(x)+int(self._tto), bb[:2])
 		self.master.CANVAS.coords('tooltip',bb)
 		self.master.CANVAS.coords('tooltext',_x,_y)
@@ -119,3 +123,17 @@ class Base:
 	
 	def _create_level_tag(self,level):
 		return 'l%s' % str(level)
+		
+	def _get_tooltip_offset(self,**args):
+		ttox, ttoy = self._tto, self._tto
+		px,py = args['x'],args['y']
+		ww, wh = int(self.master.winfo_width()) * 0.75, int(self.master.winfo_height()) * 0.75
+		if px > ww:
+			ttox = -1 * (self._ttw + ttox)
+		if py > wh:
+			ttoy = -1 * (self._tth + ttoy)
+		return ttox,ttoy
+	
+	def _create_tooltip_bbox(self,**args):
+		ttox,ttoy = self._get_tooltip_offset(**args)
+		return args['x']+ttox,args['y']+ttoy,args['x']+self._ttw+ttox,args['y']+self._tth+ttoy
