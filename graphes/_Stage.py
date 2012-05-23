@@ -7,6 +7,14 @@ class Base:
 		self.master.CANVAS.create_rectangle(0,0,100,100,fill='',outline='',tags=('actor','tooltip'))
 		self.master.CANVAS.create_text(10,10,fill='',text='',anchor='nw',tags=('actor','tooltext'),font='Helvetica 12')
 	def build(self): pass
+	def build_wrapper(self):
+		self.build()
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Enter>',self.onMouseEnter)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Leave>',self.onMouseLeave)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Motion>',self.onMouseMove)
+		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Button-1>',self.onMouseClick)
+		self.update_scrollregion()
+	
 	def destroy(self):
 		self.master.CANVAS.delete('actor')
 		self.master.CANVAS.update_idletasks()
@@ -102,6 +110,9 @@ class Base:
 	
 	def update_idletasks(self):
 		self.master.CANVAS.update_idletasks()
+	
+	def idle(self):
+		self.update_idletasks()
 	
 	def _create_tooltip_tag(self,level,function_number):
 		return 'tt%s-%s' % (str(level),str(function_number))

@@ -36,7 +36,7 @@ class Application(Frame) :
 			return
 		self.resetCanvas()
 		self.stage = self.graphes[index](self)
-		self.stage.build()
+		self.stage.build_wrapper()
 		
 	def resetCanvas(self,event=None):
 		try:
@@ -106,7 +106,7 @@ class Application(Frame) :
 		self.rc.set_geometry(self.master.geometry())
 		try:
 			if self.stage is not None:
-				self.stage.resize(self.winfo_width(),self.winfo_height())
+				self.stage.resize()
 		except Exception:
 				pass
 		self.CANVAS.update_idletasks()

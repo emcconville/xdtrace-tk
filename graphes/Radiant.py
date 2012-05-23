@@ -1,8 +1,10 @@
 import sqlite3, re
 import _Stage
 class Stage(_Stage.Base):
+	
 	MENU_TITLE = 'Radiant Dial'
 	ACTOR_TAG = 'radiant'
+	
 	def build(self):
 		self.width = self.master.CANVAS.winfo_width()
 		self.height = self.master.CANVAS.winfo_height()
@@ -13,10 +15,7 @@ class Stage(_Stage.Base):
 		sql  = 'SELECT a.function_name, a.memory_usage AS start, b.memory_usage AS end, a.user_defined, a.level, a.function_number '
 		sql += 'FROM trace a JOIN trace b ON (a.level = b.level AND a.function_number = b.function_number AND b.entry = 1) '
 		sql += 'WHERE a.entry = 0 AND a.memory_usage <> b.memory_usage ORDER BY a.level ASC'
-		first_level = None
 		for function_name, start, end, user_defined, level, func_num in cursor.execute(sql):
-			if first_level is None:
-				first_level = level
 			start, end = self.radiant(start,end)
 			color = self.master.rc.get('primary_color' if user_defined == 1 else 'secondary_color')
 			options = {
@@ -33,11 +32,6 @@ class Stage(_Stage.Base):
 			self.master.CANVAS.create_arc(self._create_bbox(level),**options)
 			self.update_idletasks()
 		cursor.close()
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Enter>',self.onMouseEnter)
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Leave>',self.onMouseLeave)
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Motion>',self.onMouseMove)
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Button-1>',self.onMouseClick)
-		self.update_scrollregion()
 		
 	
 	def radiant(self,start,end):
@@ -54,4 +48,11 @@ class Stage(_Stage.Base):
 	
 	def _offset(self):
 		return min(self.width,self.height) / (self.total_levels * 2)
+	
+	def resize(self):
+		self.width,self.height = self.master.winfo_width(),self.master.winfo_height()
+		for level in range(1,int(self.total_levels)+1):
+			for _i in self.master.CANVAS.find_withtag(self._create_level_tag(level)):
+				self.master.CANVAS.coords(_i,self._create_bbox(level))
+			self.idle()
 	

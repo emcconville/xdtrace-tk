@@ -1,8 +1,10 @@
 import sqlite3
 import _Stage
 class Stage(_Stage.Base):
+	
 	MENU_TITLE = 'Delta Bars'
 	ACTOR_TAG = 'bar'
+	
 	def build(self):
 		self.width = self.master.CANVAS.winfo_width() - 40
 		dh = sqlite3.connect(self.master.db_path)
@@ -25,10 +27,6 @@ class Stage(_Stage.Base):
 			}
 			self.master.CANVAS.create_rectangle(self._create_bbox(level,memory_start,memory_end), **opts)
 			self.update_idletasks()
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Enter>',self.onMouseEnter)
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Leave>',self.onMouseLeave)
-		self.master.CANVAS.tag_bind(self.ACTOR_TAG,'<Motion>',self.onMouseMove)
-		self.update_scrollregion()
 		
 	def _create_bbox(self,level,memory_start,memory_end):
 		left = int(((memory_start-self.min_memory) / self.total_memory) * self.width) + 20
