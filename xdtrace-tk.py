@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import re, os, cPickle, hashlib, sqlite3
-import Tkinter,tkFileDialog, tkSimpleDialog
+import re, os
+import Tkinter, tkFileDialog
 
 from xdbtrc.xt import Import
 from xdbtrc.rc import Preferences, Preferences_Dialog
@@ -47,7 +47,12 @@ class Application(Tkinter.Frame) :
 		self.CANVAS.update_idletasks()
 	
 	def pref_dialog(self):
-		Preferences_Dialog(self)
+		delta_configs = Preferences_Dialog(self)
+		if delta_configs:
+			self.CANVAS.configure(self.CANVAS,background=self.rc.get('background_color'))
+			if self.stage is not None:
+				self.stage.destroy()
+				self.stage.build()
 		
 	def loadGraphes(self):
 		for root, dirs, files in os.walk(os.path.join('.','graphes')):
@@ -80,7 +85,7 @@ class Application(Tkinter.Frame) :
 		self.loadGraphes()
 		self.initMenu()
 		self.VS = Tkinter.Scrollbar(self,orient='vertical')
-		self.CANVAS = Tkinter.Canvas(self,yscrollcommand=self._yset)
+		self.CANVAS = Tkinter.Canvas(self,background=self.rc.get('background_color'),takefocus=1,yscrollcommand=self._yset)
 		self.CANVAS.pack(fill='both', expand=1, side='left')
 		self.VS.config(command=self.CANVAS.yview)
 		self.VS.pack(fill='y',side='right')
