@@ -66,14 +66,14 @@ class Application(Tkinter.Frame) :
 	def initMenu(self):
 		self.MENU_BAR = Tkinter.Menu(self.master)
 		self.F_MENU = Tkinter.Menu(self.MENU_BAR,tearoff=0)
-		self.F_MENU.add_command(label='Open',accelerator='Cmd+O',command=self.loadFile)
+		self.F_MENU.add_command(label='Open',command=self.loadFile)
 		self.F_MENU.add_separator()
 		self.F_MENU.add_command(label='Preferences',command=self.pref_dialog)
 		self.F_MENU.add_separator()
-		self.F_MENU.add_command(label='Close',accelerator='Cmd+W',command=self.resetCanvas)
-		self.F_MENU.add_command(label='Quit', accelerator='Cmd+Q',command=self.close)
-		self.MENU_BAR.add_cascade(label='Files',menu=self.F_MENU)
-		self.V_MENU = Tkinter.Menu(self.MENU_BAR,tearoff=1)
+		self.F_MENU.add_command(label='Close',command=self.resetCanvas)
+		self.F_MENU.add_command(label='Quit',command=self.close)
+		self.MENU_BAR.add_cascade(label='File',menu=self.F_MENU)
+		self.V_MENU = Tkinter.Menu(self.MENU_BAR,tearoff=0)
 		i = 0
 		for graph in self.graphes:
 			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.buildCanvas(i))
