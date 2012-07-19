@@ -8,7 +8,7 @@ from xdbtrc.rc import Preferences, Preferences_Dialog
 
 class Application(Tkinter.Frame) :
 	stage = db_path = None
-	graphes = []
+	graphs = []
 	width, height = 760, 360
 	
 	def loadFile(self,event=None):
@@ -34,7 +34,7 @@ class Application(Tkinter.Frame) :
 			print '[%s] is undefined' % e
 			return
 		self.resetCanvas()
-		self.stage = self.graphes[index](self)
+		self.stage = self.graphs[index](self)
 		self.stage.build_wrapper()
 		
 	def resetCanvas(self,event=None):
@@ -54,14 +54,14 @@ class Application(Tkinter.Frame) :
 				self.stage.destroy()
 				self.stage.build()
 		
-	def loadGraphes(self):
-		for root, dirs, files in os.walk(os.path.join('.','graphes')):
+	def loadGraphs(self):
+		for root, dirs, files in os.walk(os.path.join('.','graphs')):
 			for fname in files:
 				_name = re.match(r'^([A-Z](.*?))\.py$',fname)
 				if _name is not None:
-					module = __import__('graphes.%s' % _name.group(1))
+					module = __import__('graphs.%s' % _name.group(1))
 					graph = module.__dict__[_name.group(1)]
-					self.graphes.append(graph.Stage)
+					self.graphs.append(graph.Stage)
 		
 	def initMenu(self):
 		self.MENU_BAR = Tkinter.Menu(self.master)
@@ -75,14 +75,14 @@ class Application(Tkinter.Frame) :
 		self.MENU_BAR.add_cascade(label='File',menu=self.F_MENU)
 		self.V_MENU = Tkinter.Menu(self.MENU_BAR,tearoff=0)
 		i = 0
-		for graph in self.graphes:
+		for graph in self.graphs:
 			self.V_MENU.add_command(label=graph.MENU_TITLE,command=lambda i=i: self.buildCanvas(i))
 			i+=1
 		self.MENU_BAR.add_cascade(label='Views',menu=self.V_MENU)
 		self.master.configure(menu=self.MENU_BAR)
 		
 	def initWidgets(self):
-		self.loadGraphes()
+		self.loadGraphs()
 		self.initMenu()
 		self.VS = Tkinter.Scrollbar(self,orient='vertical')
 		self.CANVAS = Tkinter.Canvas(self,background=self.rc.get('background_color'),takefocus=1,yscrollcommand=self._yset)
@@ -124,7 +124,7 @@ class Application(Tkinter.Frame) :
 				self.resetCanvas()
 			elif _c == 'q':
 				self.close()
-			elif _c.isdigit() and int(_c) in range(1,len(self.graphes)+1):
+			elif _c.isdigit() and int(_c) in range(1,len(self.graphs)+1):
 				self.buildCanvas(int(_c)-1)
 	
 	def _yset(self,start,end):

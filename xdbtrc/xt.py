@@ -21,7 +21,7 @@ class Import(object):
 			self.import_data()
 		else:
 			self.app.CANVAS.itemconfigure(self._text,text='Using existing data')
-		self.show_graphes()
+		self.show_graphs()
 		return self.database
 	
 	def checksum(self):
@@ -110,9 +110,9 @@ class Import(object):
 		self.app.CANVAS.coords(self._prog,self._width,self._top,self._width*2,self._top+10)
 		self.app.CANVAS.update_idletasks()
 	
-	def show_graphes(self):
+	def show_graphs(self):
 		_t, _k = self._top + 20, 1
-		for obj in self.app.graphes:
+		for obj in self.app.graphs:
 			_m = u'\u2318 %d\t%s' % (_k,obj.MENU_TITLE)
 			self.app.CANVAS.create_text(self._width,_t,text=_m,tags='actor',justify='left',width=self._width,anchor='nw',fill=self.app.rc.get('neutral_color'),font='Helvetica 12')
 			_t, _k = _t + 16, _k + 1
